@@ -1,0 +1,19 @@
+import express from "express";
+import {
+  createOrder,
+  initiatePayment,
+  easybuzzWebhook,
+  getUserOrders
+} from "../controllers/order.controllers.js";
+
+import { verifyJWT } from "../middlewares/auth.middlewares.js";
+
+const router = express.Router();
+
+router.post("/create", createOrder); // supports guest checkout
+router.post("/initiate-payment", initiatePayment);
+router.post("/webhook", easybuzzWebhook);
+
+router.get("/", verifyJWT, getUserOrders);
+
+export default router;

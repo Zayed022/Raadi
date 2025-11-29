@@ -1,0 +1,34 @@
+import express from "express";
+import {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getProductByCategory
+} from "../controllers/product.controllers.js";
+import { upload } from "../middlewares/multer.middlewares.js";
+import { verifyJWT } from "../middlewares/auth.middlewares.js";
+
+const router = express.Router();
+
+// public routes
+router.get("/", getAllProducts);
+router.get("/:id", getProductById);
+
+// admin routes
+router.post(
+  "/add-product",
+  
+  upload.fields([{ name: "image", maxCount: 1 }]),
+  createProduct
+);
+router.put("/:id", verifyJWT, updateProduct);
+router.delete("/:id", verifyJWT, deleteProduct);
+router.get("/category/:categoryName", getProductByCategory);
+
+router.get("/:id", getProductById);
+
+
+
+export default router;

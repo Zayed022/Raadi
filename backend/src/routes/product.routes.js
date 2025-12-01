@@ -5,7 +5,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  getProductByCategory
+  getProductByCategory,
+  getRecommendedProducts
 } from "../controllers/product.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -26,6 +27,8 @@ router.post(
 router.put("/:id", verifyJWT, updateProduct);
 router.delete("/:id", verifyJWT, deleteProduct);
 router.get("/category/:categoryName", getProductByCategory);
+router.get("/recommended/:productId", getRecommendedProducts);
+
 
 router.get("/:id", getProductById);
 

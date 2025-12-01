@@ -5,7 +5,9 @@ import cookieParser from "cookie-parser"
 const app = express();
 
 app.use(cors({
-    origin:process.env.CORS_ORIGIN,
+    origin:[
+        "http://localhost:5173"
+    ],
     credentials: true,
 }))
 
@@ -32,5 +34,23 @@ app.use("/api/v1/order",orderRoute);
 
 import reviewRoute from './routes/review.routes.js'
 app.use("/api/v1/review",reviewRoute);
+
+import galleryRoute from './routes/gallery.routes.js'
+app.use("/api/v1/gallery",galleryRoute);
+
+import specialProductRoute from './routes/specialProducts.routes.js'
+app.use("/api/v1/featuredProduct",specialProductRoute);
+
+import bestSeller from './routes/bestSeller.routes.js'
+app.use("/api/v1/bestSeller",bestSeller);
+
+import promoCard from './routes/promoCard.routes.js'
+app.use("/api/v1/promoCard",promoCard);
+
+import homeBanner from './routes/homeBanner.routes.js'
+app.use("/api/v1/homeBanner",homeBanner);
+
+import aboutBanner from './routes/aboutBanner.routes.js'
+app.use("/api/v1/aboutBanner",aboutBanner);
 
 export {app}

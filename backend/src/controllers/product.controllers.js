@@ -72,7 +72,7 @@ export const createProduct = async (req, res) => {
 // ===========================
 export const getAllProducts = async (req, res) => {
   try {
-    const { search, category, page = 1, limit = 12 } = req.query;
+    const { search, category, sort, minPrice, maxPrice, page = 1, limit = 12 } = req.query;
 
     let query = {};
 
@@ -80,14 +80,46 @@ export const getAllProducts = async (req, res) => {
       query.name = { $regex: search, $options: "i" };
     }
 
+    // Price filters
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    // Category filter by name
     if (category) {
-      query.category = category;
+      const categoryObj = await Category.findOne({
+        name: { $regex: new RegExp("^" + category + "$", "i") }
+      });
+      if (categoryObj) {
+        query.category = categoryObj._id;
+      }
+    }
+
+    // Sorting Logic
+    let sortOption = {};
+    switch (sort) {
+      case "price_low":
+        sortOption.price = 1;
+        break;
+      case "price_high":
+        sortOption.price = -1;
+        break;
+      case "rating":
+        sortOption.ratings = -1;
+        break;
+      case "latest":
+        sortOption.createdAt = -1;
+        break;
+      default:
+        sortOption.createdAt = -1;
     }
 
     const products = await Product.find(query)
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+      .sort(sortOption);
 
     const total = await Product.countDocuments(query);
 
@@ -104,6 +136,7 @@ export const getAllProducts = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 
 // ===========================
 // Get Single Product by ID
@@ -212,3 +245,37 @@ export const getProductByCategory = async (req, res) => {
     });
   }
 };
+
+
+// ===========================
+// Recommended Products
+// ===========================
+export const getRecommendedProducts = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const recommended = await Product.find({
+      category: product.category,
+      _id: { $ne: productId } // exclude self
+    })
+      .sort({ ratings: -1, sold: -1 }) // prioritize best items
+      .limit(10);
+
+    return res.status(200).json({
+      success: true,
+      count: recommended.length,
+      recommended
+    });
+
+  } catch (error) {
+    console.error("Recommendation Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+

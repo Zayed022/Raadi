@@ -1,0 +1,22 @@
+import express from "express";
+import {
+  createAboutIntro,
+  getAboutIntro,
+} from "../controllers/aboutIntro.controllers.js";
+
+import { upload } from "../middlewares/multer.middlewares.js";
+import { verifyJWT } from "../middlewares/auth.middlewares.js";
+
+const router = express.Router();
+
+// Admin create/update section
+router.post(
+  "/",
+  upload.fields([{ name: "mainImage", maxCount: 1 }]),
+  createAboutIntro
+);
+
+// Public get section
+router.get("/", getAboutIntro);
+
+export default router;

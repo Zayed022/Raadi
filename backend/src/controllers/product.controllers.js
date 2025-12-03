@@ -15,6 +15,9 @@ export const createProduct = async (req, res) => {
       discount,
       brand,
       stock,
+      isTopProduct,
+      isFeatureProduct,
+      isBestSeller,
     } = req.body;
 
     if (!name || !price || !category || !stock) {
@@ -48,6 +51,9 @@ export const createProduct = async (req, res) => {
       brand,
       stock,
       category,
+      isTopProduct,
+      isFeatureProduct,
+      isBestSeller,
       images: [uploadedImage.url],
     });
 
@@ -276,6 +282,64 @@ export const getRecommendedProducts = async (req, res) => {
   } catch (error) {
     console.error("Recommendation Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+export const getTopProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ isTopProduct: true })
+      .sort({ createdAt: -1 }) 
+      .limit(8);
+
+    return res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Get Top Products Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const getFeatureProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ isFeatureProduct: true })
+      .sort({ createdAt: -1 }) 
+      .limit(8);
+
+    return res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Get Top Products Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const getBestSeller= async (req, res) => {
+  try {
+    const products = await Product.find({ isBestSeller: true })
+      .sort({ createdAt: -1 }) 
+      .limit(8);
+
+    return res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Get Top Products Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 

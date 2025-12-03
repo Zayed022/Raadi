@@ -1,4 +1,5 @@
 import Cart from "../models/cart.models.js";
+import PricingConfig from "../models/pricingConfig.models.js";
 import Product from "../models/product.models.js";
 
 // ===========================
@@ -100,29 +101,46 @@ export const updateQuantity = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ user: req.user._id }).populate("items.product");
 
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(
+      item => item.product._id.toString() === productId
+    );
 
     if (itemIndex === -1) return res.status(404).json({ message: "Item not found" });
 
+    // Update quantity & price
     cart.items[itemIndex].quantity = quantity;
     cart.items[itemIndex].price = quantity * cart.items[itemIndex].product.price;
 
     cart.totalItems = cart.items.length;
     cart.totalPrice = cart.items.reduce((acc, item) => acc + item.price, 0);
 
+    // Recalculate final total dynamically with pricing config
+    const pricingConfig = await PricingConfig.findOne();
+    const tax = pricingConfig?.taxAmount || 0;
+    const shipping = pricingConfig?.shippingAmount || 0;
+    const finalTotal = cart.totalPrice + tax + shipping;
+
     await cart.save();
 
-    return res.status(200).json({ success: true, message: "Quantity updated", cart });
+    return res.status(200).json({
+      success: true,
+      message: "Quantity updated",
+      cart,
+      tax,
+      shipping,
+      finalTotal,
+    });
 
   } catch (error) {
     console.error("UpdateQuantity Error:", error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 // ===========================
 // Clear Cart

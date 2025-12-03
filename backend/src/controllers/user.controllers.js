@@ -43,13 +43,24 @@ export const googleLogin = async (req, res) => {
 
     const { accessToken, refreshToken } = await generateTokens(user);
 
-    return res.status(200).json({
-      success: true,
-      message: "Login Successful",
-      user,
-      accessToken,
-      refreshToken
-    });
+    res.cookie("accessToken", accessToken, {
+  httpOnly: true,
+  secure: false,        // true in production under https
+  sameSite: "lax",      // or "none" with https
+});
+
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+});
+
+return res.status(200).json({
+  success: true,
+  message: "Login Successful",
+  user,
+});
+
 
   } catch (error) {
     console.error("Google Login Error:", error);

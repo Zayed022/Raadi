@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post(
   "/",
-  verifyJWT,
+  
   
   upload.fields([{ name: "image", maxCount: 1 }]),
   createCategory

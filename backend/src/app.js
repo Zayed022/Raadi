@@ -53,4 +53,22 @@ app.use("/api/v1/homeBanner",homeBanner);
 import aboutBanner from './routes/aboutBanner.routes.js'
 app.use("/api/v1/aboutBanner",aboutBanner);
 
+import aboutIntro from './routes/aboutIntro.routes.js'
+app.use("/api/v1/aboutIntro",aboutIntro);
+
+import videoSection from './routes/videoSection.routes.js'
+app.use("/api/v1/videoSection",videoSection);
+
+import topProduct from './routes/topProduct.routes.js'
+app.use("/api/v1/topProduct",topProduct);
+
+import featuredProduct from './routes/featuredProduct.routes.js'
+app.use("/api/v1/featuredProducts",featuredProduct);
+
+import promoCode from './routes/promoCode.routes.js'
+app.use("/api/v1/promoCode",promoCode);
+
+import pricingConfig from './routes/pricingConfig.routes.js'
+app.use("/api/v1/pricingConfig",pricingConfig);
+
 export {app}

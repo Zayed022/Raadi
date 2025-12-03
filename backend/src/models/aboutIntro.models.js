@@ -2,19 +2,22 @@ import mongoose from "mongoose";
 
 const AboutIntroSchema = new mongoose.Schema(
   {
-    eyebrow: { type: String, default: "Welcome to Perfume World" }, // small top text
-    title: { type: String, required: true },                         // Raadi aromas and fragrance
-    description: { type: String, required: true },                   // paragraph
-    buttonText: { type: String, default: "Read more" },
-    buttonLink: { type: String, default: "/about" },
+    eyebrow: { type: String, default: "Welcome to Perfume World" },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    buttonText: { type: String, default: "Read More" },
 
-    mainImage: { type: String, required: true },                     // bottle image (Cloudinary URL)
-
-    rightCardTitle: { type: String, default: "Product" },
-    rightPoints: {
-      type: [String],
-      default: [],
+    // ⭐ NEW — product linked to this intro section
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
     },
+
+    mainImage: { type: String, required: true },
+
+    rightCardTitle: { type: String, default: "Product Features" },
+    rightPoints: { type: [String], default: [] },
   },
   { timestamps: true }
 );

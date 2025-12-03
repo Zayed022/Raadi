@@ -12,13 +12,19 @@ export const createAboutIntro = async (req, res) => {
       buttonLink,
       rightCardTitle,
       rightPoints,
+      productId
     } = req.body;
 
-    const localPath = req.files?.mainImage?.[0]?.path;
-
-    if (!localPath) {
-      return res.status(400).json({ success: false, message: "Main image is required" });
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required"
+      });
     }
+
+    const localPath = req.files?.mainImage?.[0]?.path;
+    if (!localPath)
+      return res.status(400).json({ success: false, message: "Main image is required" });
 
     const uploadedImg = await uploadOnCloudinary(localPath);
 
@@ -37,6 +43,7 @@ export const createAboutIntro = async (req, res) => {
       buttonLink,
       rightCardTitle,
       rightPoints: pointsArray,
+      productId,
       mainImage: uploadedImg.url,
     });
 
@@ -49,6 +56,7 @@ export const createAboutIntro = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 
 // GET latest intro section
 export const getAboutIntro = async (req, res) => {

@@ -10,15 +10,20 @@ const userSchema = new Schema({
 
   role: { type: String, enum: ["customer", "admin", "delivery"], default: "customer" },
 
-  addresses: [{
-    fullName: String,
-    phone: String,
-    pincode: String,
-    state: String,
+  addresses: [
+  {
+    firstName: String,
+    lastName: String,
+    address: String,
+    apartment: String,      // optional
     city: String,
-    landmark: String,
-    type: { type: String, enum: ["home", "office"] }
-  }],
+    state: String,
+    pincode: String,
+    phone: String,
+    type: { type: String, enum: ["home", "office"], default: "home" }
+  }
+],
+
 
   lastLogin: Date,
   refreshToken: String,

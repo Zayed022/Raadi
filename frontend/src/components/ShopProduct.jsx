@@ -161,7 +161,7 @@ const openProductDetails = (id) => {
 
         {/* LEFT FILTER SIDEBAR */}
         <aside className="w-72 bg-white rounded-2xl p-5 shadow-md h-150 sticky top-24">
-          <h2 className="font-bold text-xl mb-4">Filter</h2>
+          <h2 className="font-bold text-4xl mb-4">Filter</h2>
 
           {/* Search */}
           <input
@@ -173,7 +173,7 @@ const openProductDetails = (id) => {
           {/* CATEGORY FILTER */}
           <h3 className="font-semibold text-4xl mb-2">Categories</h3>
           {categories.map((cat) => (
-            <label key={cat._id} className="flex items-center gap-2 mb-2">
+            <label key={cat._id} className="flex items-center gap-2 mb-2 text-2xl">
               <input
                 type="checkbox"
                 checked={selectedCategory === cat.name}

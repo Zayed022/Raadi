@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Cart from "./pages/Cart";
 import ProductDetails from "./pages/ProductDetails";
+import CategoryProducts from "./pages/CategoryProducts";
+import Checkout from "./pages/Checkout";
 
 
 function App() {
@@ -26,6 +28,9 @@ function App() {
          <Route path="/login" element={<Login />} />
          <Route path="/cart" element={<Cart />} />
          <Route path="/product/:id" element={<ProductDetails />} />
+         <Route path="/category/:categoryName" element={<CategoryProducts />} />
+         <Route path="/checkout" element={<Checkout />} />
+
          <Route 
           path="/wishlist" 
           element={

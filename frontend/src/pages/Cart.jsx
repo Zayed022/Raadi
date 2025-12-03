@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiTrash2 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [finalTotal, setFinalTotal] = useState(null);
@@ -22,7 +23,7 @@ export default function Cart() {
 
   const fetchPricingConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/pricing-config");
+      const res = await axios.get("http://localhost:8000/api/v1/pricingConfig");
       setTax(res.data.taxAmount || 0);
       setShipping(res.data.shippingAmount || 0);
     } catch (err) {
@@ -126,6 +127,7 @@ const updateTotals = (res) => {
       console.log("Promo Error:", err);
     }
   };
+  
 
   const removePromo = () => {
     setAppliedCode("");
@@ -256,9 +258,12 @@ const updateTotals = (res) => {
               )}
             </div>
 
-            <button className="w-full py-3 mt-5 bg-orange-500 text-white rounded-xl text-lg font-bold hover:bg-orange-600 transition-all">
-              Checkout
-            </button>
+            <button
+      onClick={() => navigate("/checkout")}
+      className="w-full py-3 mt-5 bg-orange-500 text-white rounded-xl text-lg font-bold hover:bg-orange-600 transition-all"
+    >
+      Checkout
+    </button>
           </div>
         </div>
       )}

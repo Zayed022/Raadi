@@ -21,6 +21,7 @@ router.get("/", getAllProducts);
 router.get("/top-products", getTopProducts);
 router.get("/feature-products", getFeatureProducts);
 router.get("/best-seller", getBestSeller);
+router.get("/category/:categoryName", getProductByCategory);
 router.get("/:id", getProductById);
 
 // admin routes
@@ -33,7 +34,6 @@ router.post(
 
 router.put("/:id", verifyJWT, updateProduct);
 router.delete("/:id", deleteProduct);
-router.get("/category/:categoryName", getProductByCategory);
 router.get("/recommended/:productId", getRecommendedProducts);
 
 

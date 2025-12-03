@@ -2,12 +2,25 @@ import SpecialProduct from "../models/specialProduct.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 // CREATE Special Product Banner
+import Product from "../models/product.models.js";
+
 export const createSpecialProduct = async (req, res) => {
   try {
-    const { title, description, startingPrice, isActive } = req.body;
+    const { title, description, startingPrice, isActive, productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({ message: "Product ID is required" });
+    }
+
+    // ⭐ Validate Product ID
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Invalid productId - Product not found" });
+    }
 
     const imageLocalPath = req.files?.image?.[0]?.path;
-    if (!imageLocalPath) return res.status(400).json({ message: "Image is required" });
+    if (!imageLocalPath)
+      return res.status(400).json({ message: "Image is required" });
 
     const uploadedImage = await uploadOnCloudinary(imageLocalPath);
 
@@ -17,6 +30,7 @@ export const createSpecialProduct = async (req, res) => {
       startingPrice,
       isActive,
       image: uploadedImage.url,
+      productId,
     });
 
     return res.status(201).json({ success: true, special: newSpecial });
@@ -26,12 +40,17 @@ export const createSpecialProduct = async (req, res) => {
   }
 };
 
+
+
 // GET Active Featured Special Product
 export const getActiveSpecialProduct = async (req, res) => {
   try {
-    const special = await SpecialProduct.findOne({ isActive: true });
+    const special = await SpecialProduct.findOne({ isActive: true })
+      .populate("productId");  // ⭐ This was missing
 
-    if (!special) return res.status(404).json({ message: "No active special product found" });
+    if (!special) {
+      return res.status(404).json({ message: "No active special product found" });
+    }
 
     return res.status(200).json({ success: true, special });
   } catch (err) {
@@ -39,6 +58,7 @@ export const getActiveSpecialProduct = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 // Get All Specials
 export const getAllSpecialProducts = async (req, res) => {

@@ -9,9 +9,7 @@ import SpecialProduct from "../components/SpecialProduct";
 export default function Home() {
   return (
     <>
-    <div className="p-5 text-xl font-bold">
-      Home Page
-    </div>
+    
     <HomeBanner/>
     <PromoGrid/>
     <BestSeller/>

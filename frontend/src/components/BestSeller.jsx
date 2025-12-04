@@ -111,22 +111,23 @@ export default function BestSeller() {
   const openProduct = (id) => navigate(`/product/${id}`);
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-center text-4xl md:text-5xl font-extrabold text-[#0b1b3f]">
+    <section className="max-w-7xl mx-auto px-4 md:px-6 py-14">
+      <h2 className="text-center text-3xl md:text-4xl font-extrabold text-[#0b1b3f]">
         Best Sellers
       </h2>
-      <p className="text-center text-gray-600 mt-2 mb-12 text-lg">
+      <p className="text-center text-gray-600 mt-2 mb-10 text-base md:text-lg">
         Discover our most-loved products trusted by thousands.
       </p>
 
-      {/* Responsive grid */}
-      <div className="
-        grid grid-cols-1 
-        sm:grid-cols-2 
+      {/* Smaller Product Cards Grid */}
+      <div
+        className="
+        grid grid-cols-2 
         md:grid-cols-3 
         lg:grid-cols-4 
-        gap-10
-      ">
+        gap-6 md:gap-8
+      "
+      >
         {products.map((item) => {
           const qty = cartQuantities[item._id] || 0;
 
@@ -134,24 +135,21 @@ export default function BestSeller() {
             <div
               key={item._id}
               className="
-                relative bg-white rounded-3xl p-6 
-                shadow-lg border border-gray-200 
-                hover:shadow-2xl hover:-translate-y-2
+                relative bg-white rounded-2xl p-4 
+                shadow-md border border-gray-200 
+                hover:shadow-xl hover:-translate-y-1
                 transition-all duration-300 group
               "
             >
               {/* Wishlist Button */}
               <button
-                className="absolute top-4 right-4 z-50"
+                className="absolute top-3 right-3 z-50"
                 onClick={() => handleWishlist(item._id)}
               >
                 {wishlist.includes(item._id) ? (
-                  <FaHeart className="text-orange-500" size={26} />
+                  <FaHeart className="text-orange-500" size={22} />
                 ) : (
-                  <FiHeart
-                    size={26}
-                    className="text-gray-600 hover:text-orange-500 transition-all"
-                  />
+                  <FiHeart size={22} className="text-gray-600 hover:text-orange-500 transition" />
                 )}
               </button>
 
@@ -159,15 +157,15 @@ export default function BestSeller() {
               <div
                 onClick={() => openProduct(item._id)}
                 className="
-                  bg-gray-100 rounded-2xl px-6 py-8 
+                  bg-gray-100 rounded-xl px-4 py-6 
                   flex justify-center items-center 
-                  h-64 md:h-56 lg:h-60 
-                  overflow-hidden cursor-pointer
+                  h-40 md:h-44 lg:h-48 
+                  cursor-pointer overflow-hidden
                 "
               >
                 <img
                   src={item.images?.[0]}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                   alt={item.name}
                 />
               </div>
@@ -175,7 +173,7 @@ export default function BestSeller() {
               {/* Name */}
               <h3
                 className="
-                  mt-4 text-xl font-semibold text-center text-[#0b1b3f]
+                  mt-3 text-lg font-semibold text-center text-[#0b1b3f]
                   group-hover:text-orange-600 transition cursor-pointer
                 "
                 onClick={() => openProduct(item._id)}
@@ -184,14 +182,14 @@ export default function BestSeller() {
               </h3>
 
               {/* Price */}
-              <div className="flex justify-center items-center gap-3 mt-2">
-                <p className="line-through text-gray-400 text-md">₹{item.mrp}</p>
-                <p className="text-2xl font-bold text-orange-600">₹{item.price}</p>
+              <div className="flex justify-center items-center gap-2 mt-1">
+                <p className="line-through text-gray-400 text-sm">₹{item.mrp}</p>
+                <p className="text-lg font-bold text-orange-600">₹{item.price}</p>
               </div>
 
-              {/* Add to cart / Quantity UI */}
+              {/* Add to Cart / Quantity */}
               {qty > 0 ? (
-                <div className="flex justify-center items-center gap-4 mt-4">
+                <div className="flex justify-center items-center gap-3 mt-3">
                   <button
                     className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
                     onClick={() => updateQuantity(item._id, qty - 1)}
@@ -199,7 +197,7 @@ export default function BestSeller() {
                     <FiMinus />
                   </button>
 
-                  <span className="font-semibold text-lg min-w-[24px] text-center">
+                  <span className="font-semibold text-base min-w-[28px] text-center">
                     {qty}
                   </span>
 
@@ -214,8 +212,8 @@ export default function BestSeller() {
                 <button
                   onClick={() => handleAddToCart(item._id)}
                   className="
-                    w-full mt-5 py-3 rounded-xl 
-                    bg-orange-500 text-white text-lg font-semibold
+                    w-full mt-4 py-2 rounded-lg 
+                    bg-orange-500 text-white text-base font-semibold
                     hover:bg-orange-600 transition
                   "
                 >

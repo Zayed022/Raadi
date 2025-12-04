@@ -60,10 +60,13 @@ export default function ProductDetails() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
 
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+
   // Keep UI snappy - fetch all on mount / id change
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchProduct(), fetchCart(), fetchWishlist(), fetchReviews(), checkLoginStatus()])
+    Promise.all([fetchProduct(), fetchCart(), fetchWishlist(), fetchReviews(), fetchRelatedProducts(),checkLoginStatus()])
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -148,6 +151,18 @@ export default function ProductDetails() {
       }
     }
   };
+
+  const fetchRelatedProducts = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/products/recommended/${id}`);
+    const list = res.data.recommended || [];
+    setRelatedProducts(list.slice(0, 4)); // show only 4 related
+  } catch (err) {
+    console.log("Related products fetch error:", err);
+    setRelatedProducts([]);
+  }
+};
+
 
   /* -------------------- Cart / Wishlist actions (optimistic) -------------------- */
 
@@ -475,6 +490,65 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* RELATED PRODUCTS SECTION */}
+{relatedProducts.length > 0 && (
+  <div className="mt-20 max-w-7xl mx-auto">
+    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8">
+      Related Products
+    </h2>
+
+    <div
+      className="
+      grid grid-cols-2 
+      sm:grid-cols-3 
+      md:grid-cols-4 
+      gap-6 md:gap-10
+    "
+    >
+      {relatedProducts.map((item) => (
+        <div
+          key={item._id}
+          onClick={() => navigate(`/product/${item._id}`)}
+          className="
+            bg-white rounded-2xl p-5 shadow-md cursor-pointer
+            hover:shadow-xl hover:-translate-y-2 
+            transition-all duration-300 group
+          "
+        >
+          {/* IMAGE */}
+          <div className="bg-gray-100 rounded-xl h-44 flex items-center justify-center overflow-hidden">
+            <img
+              src={item.images?.[0]}
+              alt={item.name}
+              className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
+            />
+          </div>
+
+          {/* NAME */}
+          <h3 className="mt-4 text-lg font-semibold text-gray-900 line-clamp-1">
+            {item.name}
+          </h3>
+
+          {/* PRICE */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xl font-bold text-orange-600">
+              ₹{item.price}
+            </span>
+            {item.mrp && (
+              <span className="text-gray-400 line-through text-sm">
+                ₹{item.mrp}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+
     </section>
+    
   );
 }

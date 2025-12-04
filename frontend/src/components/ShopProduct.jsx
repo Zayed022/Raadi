@@ -14,6 +14,8 @@ export default function ShopProduct() {
   const [ratingFilter, setRatingFilter] = useState(null);
   const [sort, setSort] = useState("");
   const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [search, setSearch] = useState("");
+
 
   useEffect(() => {
     fetchProducts();
@@ -24,21 +26,24 @@ export default function ShopProduct() {
   }, [selectedCategory, ratingFilter, sort, priceRange]);
 
   const fetchProducts = async () => {
-    try {
-      const res = await axios.get("http://localhost:8000/api/v1/products/", {
-        params: {
-          category: selectedCategory,
-          rating: ratingFilter,
-          sort,
-          minPrice: priceRange[0],
-          maxPrice: priceRange[1],
-        },
-      });
-      setProducts(res.data.products);
-    } catch (err) {
-      console.log("Product Fetch Error", err);
-    }
-  };
+  try {
+    const res = await axios.get("http://localhost:8000/api/v1/products/", {
+      params: {
+        search,
+        category: selectedCategory,
+        rating: ratingFilter,
+        sort,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+      },
+    });
+
+    setProducts(res.data.products);
+  } catch (err) {
+    console.log("Product Fetch Error", err);
+  }
+};
+
 
   const fetchCategories = async () => {
     try {
@@ -161,19 +166,16 @@ const openProductDetails = (id) => {
 
         {/* LEFT FILTER SIDEBAR */}
         <aside className="w-72 bg-white rounded-2xl p-5 shadow-md h-150 sticky top-24">
-          <h2 className="font-bold text-4xl mb-4">Filter</h2>
+          <h2 className="font-bold text-2xl mb-4">Filter</h2>
 
           {/* Search */}
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="w-full px-4 py-2 border rounded-lg mb-4"
-          />
+         
+
 
           {/* CATEGORY FILTER */}
-          <h3 className="font-semibold text-4xl mb-2">Categories</h3>
+          <h3 className="font-semibold text-xl mb-2">Categories</h3>
           {categories.map((cat) => (
-            <label key={cat._id} className="flex items-center gap-2 mb-2 text-2xl">
+            <label key={cat._id} className="flex items-center gap-2 mb-2 text-lg">
               <input
                 type="checkbox"
                 checked={selectedCategory === cat.name}
@@ -188,7 +190,7 @@ const openProductDetails = (id) => {
           ))}
 
           {/* PRICE RANGE */}
-          <h3 className="font-semibold text-2xl mt-6 mb-2">Price Range</h3>
+          <h3 className="font-semibold text-xl mt-6 mb-2">Price Range</h3>
           <input
             type="range"
             min="0"
@@ -200,18 +202,32 @@ const openProductDetails = (id) => {
           <p className="mt-1 text-lg text-gray-600">Upto ₹{priceRange[1]}</p>
 
           {/* RATING FILTER */}
-          <h3 className="font-semibold text-2xl mt-6 mb-2">Rating</h3>
-          {[5, 4, 3].map((r) => (
-            <p
-              key={r}
-              onClick={() => setRatingFilter(r)}
-              className={`cursor-pointer mb-2 ${
-                ratingFilter === r && "font-bold text-orange-500"
-              }`}
-            >
-              ⭐ {r} & up
-            </p>
-          ))}
+          <h3 className="font-semibold text-xl mt-6 mb-2">Rating</h3>
+
+{[5, 4, 3, 2].map((r) => (
+  <p
+    key={r}
+    onClick={() => setRatingFilter(ratingFilter === r ? null : r)}
+    className={`cursor-pointer mb-2 ${
+      ratingFilter === r ? "font-bold text-orange-500" : "text-gray-700"
+    }`}
+  >
+    ⭐ {r} & up
+  </p>
+))}
+<button
+  onClick={() => {
+    setSelectedCategory(null);
+    setRatingFilter(null);
+    setSearch("");
+    setSort("");
+    setPriceRange([0, 50000]);
+  }}
+  className="mt-6 w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
+>
+  Show All Products
+</button>
+
         </aside>
 
         {/* RIGHT CONTENT */}
@@ -239,45 +255,60 @@ const openProductDetails = (id) => {
              <div
   key={p._id}
   onClick={() => openProductDetails(p._id)}
-  className="bg-white rounded-2xl shadow-lg overflow-hidden p-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 cursor-pointer"
+  className="bg-white rounded-xl shadow-md overflow-hidden p-3 
+             hover:-translate-y-1 hover:shadow-lg transition-all duration-300 
+             cursor-pointer"
 >
-  <div className="relative bg-[#f2f1f6] rounded-xl p-6 flex items-center justify-center h-64">
+  <div className="relative bg-[#f5f5f7] rounded-lg p-4 
+                  flex items-center justify-center h-48">
     <img
       src={p.images[0]}
       alt={p.name}
-      className="w-full h-full object-contain group-hover:scale-105 transition-all duration-300"
+      className="w-full h-full object-contain transition-all duration-300"
     />
 
     <button
-      className="absolute top-4 right-4 z-50 transition-all duration-300"
+      className="absolute top-3 right-3 z-50"
       onClick={(e) => {
-        e.stopPropagation(); // Prevent card click triggering navigation
+        e.stopPropagation();
         handleWishlist(p._id);
       }}
     >
       {wishlist.includes(p._id) ? (
-        <FaHeart size={24} className="text-orange-500 transition-all" />
+        <FaHeart size={20} className="text-orange-500" />
       ) : (
         <FiHeart
-          size={24}
-          className="text-gray-600 hover:text-orange-500 hover:fill-orange-500 transition-all"
+          size={20}
+          className="text-gray-600 hover:text-orange-500 transition"
         />
       )}
     </button>
   </div>
 
-  <h3 className="mt-4 font-semibold text-lg">{p.name}</h3>
-  <p className="text-gray-600 line-through text-sm">₹{p.mrp}</p>
-  <p className="text-xl font-bold">₹{p.price}</p>
+  <h3 className="mt-3 font-semibold text-base">{p.name}</h3>
+
+  <p className="text-gray-500 line-through text-xs">₹{p.mrp}</p>
+  <p className="text-lg font-bold">₹{p.price}</p>
 
   {cart[p._id] ? (
     <div
-      className="w-full mt-4 flex items-center justify-between bg-orange-500 text-white rounded-lg py-2 px-4 animate-fade-in"
-      onClick={(e) => e.stopPropagation()} // prevent navigation
+      className="mt-3 flex items-center justify-between bg-orange-500 
+                 text-white rounded-md py-1.5 px-3"
+      onClick={(e) => e.stopPropagation()}
     >
-      <button onClick={() => updateQuantity(p._id, cart[p._id] - 1)} className="text-xl font-bold">–</button>
-      <span className="text-lg font-semibold">{cart[p._id]}</span>
-      <button onClick={() => updateQuantity(p._id, cart[p._id] + 1)} className="text-xl font-bold">+</button>
+      <button
+        onClick={() => updateQuantity(p._id, cart[p._id] - 1)}
+        className="text-lg font-bold"
+      >
+        –
+      </button>
+      <span className="text-base font-semibold">{cart[p._id]}</span>
+      <button
+        onClick={() => updateQuantity(p._id, cart[p._id] + 1)}
+        className="text-lg font-bold"
+      >
+        +
+      </button>
     </div>
   ) : (
     <button
@@ -285,12 +316,14 @@ const openProductDetails = (id) => {
         e.stopPropagation();
         addToCart(p._id);
       }}
-      className="w-full mt-4 bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+      className="w-full mt-3 bg-orange-500 text-white py-1.5 rounded-md 
+                 hover:bg-orange-600 transition"
     >
       Add to Cart
     </button>
   )}
 </div>
+
 
             ))}
           </div>

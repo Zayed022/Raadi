@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import Raadi from "../../public/Raadi.png"
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -10,7 +11,11 @@ export default function Footer() {
 
         {/* Brand / About */}
         <div>
-          <h2 className="text-3xl font-bold mb-3 text-orange-500">RAADI</h2>
+            <img 
+          src={Raadi}
+          alt="RAADI Logo" 
+          className="w-32 object-contain mb-4"
+        />
           <p className="text-sm leading-6">
            Our features include a curated range of premium perfumes, soothing aromas, designer diffusers, and handpicked spices — crafted to elevate your lifestyle.”
           </p>
@@ -35,6 +40,7 @@ export default function Footer() {
             <li><Link to="/privacy-policy" className="hover:text-orange-500">Privacy Policy</Link></li>
             <li><Link to="/return-policy" className="hover:text-orange-500">Return & Refund</Link></li>
             <li><Link to="/terms" className="hover:text-orange-500">Terms & Conditions</Link></li>
+             <li><Link to="/shipping" className="hover:text-orange-500">Shipping Methods</Link></li>
           </ul>
         </div>
 
@@ -43,16 +49,7 @@ export default function Footer() {
           <h3 className="font-semibold text-lg mb-3 text-white">Newsletter</h3>
           <p className="text-sm mb-3">Subscribe to receive updates, offers & discount coupons.</p>
 
-          <form className="flex items-center">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full px-3 py-2 rounded-l-md focus:outline-none text-gray-700"
-            />
-            <button className="bg-orange-500 text-white px-4 py-2 rounded-r-md hover:bg-orange-600 transition">
-              Subscribe
-            </button>
-          </form>
+         
 
           {/* Social Icons */}
           <div className="flex gap-4 text-xl mt-5">
@@ -66,7 +63,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-gray-700 mt-8 py-4 text-center text-sm text-gray-400">
-        © {year} RAADI. All rights reserved. | Designed & Developed by <span className="text-orange-500">Zayed & Team</span>
+        © {year} RAADI. All rights reserved. | Designed & Developed by <span className="text-orange-500">Raadi & Team</span>
       </div>
     </footer>
   );

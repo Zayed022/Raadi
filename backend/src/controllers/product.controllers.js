@@ -78,32 +78,46 @@ export const createProduct = async (req, res) => {
 // ===========================
 export const getAllProducts = async (req, res) => {
   try {
-    const { search, category, sort, minPrice, maxPrice, page = 1, limit = 12 } = req.query;
+    const {
+      search,
+      category,
+      rating,
+      sort,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 12
+    } = req.query;
 
     let query = {};
 
+    // SEARCH FILTER
     if (search) {
       query.name = { $regex: search, $options: "i" };
     }
 
-    // Price filters
+    // PRICE RANGE
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
-    // Category filter by name
+    // RATING FILTER
+    if (rating) {
+      query.ratings = { $gte: Number(rating) };
+    }
+
+    // CATEGORY FILTER
     if (category) {
       const categoryObj = await Category.findOne({
         name: { $regex: new RegExp("^" + category + "$", "i") }
       });
-      if (categoryObj) {
-        query.category = categoryObj._id;
-      }
+
+      if (categoryObj) query.category = categoryObj._id;
     }
 
-    // Sorting Logic
+    // SORT OPTIONS
     let sortOption = {};
     switch (sort) {
       case "price_low":
@@ -137,11 +151,13 @@ export const getAllProducts = async (req, res) => {
       products,
     });
 
-  } catch (error) {
-    console.error("Get Products Error:", error);
+  } catch (err) {
+    console.error("Get Products Error:", err);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+
 
 
 // ===========================

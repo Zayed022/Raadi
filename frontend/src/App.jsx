@@ -12,6 +12,13 @@ import Cart from "./pages/Cart";
 import ProductDetails from "./pages/ProductDetails";
 import CategoryProducts from "./pages/CategoryProducts";
 import Checkout from "./pages/Checkout";
+import Confirmation from "./pages/Confirmation";
+import OrderSuccess from "./pages/OrderSuccess";
+import MyOrders from "./pages/MyOrders";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import RefundPolicy from "./pages/Refund";
+import ShippingPolicy from "./pages/Shipping";
 
 
 function App() {
@@ -30,6 +37,14 @@ function App() {
          <Route path="/product/:id" element={<ProductDetails />} />
          <Route path="/category/:categoryName" element={<CategoryProducts />} />
          <Route path="/checkout" element={<Checkout />} />
+         <Route path="/confirmation" element={<Confirmation />} />
+         <Route path="/order-confirmed/:orderId" element={<OrderSuccess />} />
+         <Route path="/my-orders" element={<MyOrders />} />
+         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+         <Route path="/terms" element={<Terms />} />
+         <Route path="/return-policy" element={<RefundPolicy />} />
+         <Route path="/shipping" element={<ShippingPolicy />} />
+
 
          <Route 
           path="/wishlist" 

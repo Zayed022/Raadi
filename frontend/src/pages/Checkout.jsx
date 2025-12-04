@@ -35,6 +35,13 @@ export default function Checkout() {
 
   const [useSameForBilling, setUseSameForBilling] = useState(true);
 
+  const [pricingConfig, setPricingConfig] = useState({
+  taxAmount: 0,
+  shippingAmount: 0,
+  serviceCharge: 0,
+});
+
+
   // --- payment / shipping / coupon ---
   const [shippingOption, setShippingOption] = useState("free");
   const [paymentMethod, setPaymentMethod] = useState("easybuzz");
@@ -47,6 +54,9 @@ export default function Checkout() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [tax, setTax] = useState(0);
+    const [shipping, setShipping] = useState(0);
+  
 
   // ==========================
   // Initial fetch: cart + profile
@@ -188,72 +198,100 @@ export default function Checkout() {
     return Object.keys(errors).length === 0;
   };
 
+
+  
+
   // ==========================
   // Place order: save address in user profile first
   // ==========================
-  const handlePlaceOrder = async () => {
-    setError(null);
+const handlePlaceOrder = async () => {
+  setError(null);
 
-    if (!validateAddress()) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
+  if (!validateAddress()) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
 
-    const addressPayload = {
-      firstName,
-      lastName,
-      address,
-      apartment,
-      city,
-      state: stateField,
-      pincode,
-      phone,
-      type: "home",
-    };
-
-    setPlacingOrder(true);
-    try {
-      // 1) Save / overwrite address in user profile
-      await axios.put(
-        "http://localhost:8000/api/v1/users/profile",
-        { addresses: [addressPayload] },
-        { withCredentials: true }
-      );
-
-      // 2) Create order with shippingAddress
-      const body = {
-        shippingAddress: addressPayload,
-        paymentMethod,
-        shippingOption,
-        coupon: couponMessage?.applied ? couponCode : null,
-      };
-
-      const res = await axios.post(
-        "http://localhost:8000/api/v1/order/create",
-        body,
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        const orderId =
-          res.data.order?._id || res.data.orderId || "success";
-        navigate(`/order/${orderId}`);
-      } else {
-        setError(res.data.message || "Could not create order.");
-      }
-    } catch (err) {
-      console.error("Place order error", err);
-      if (err.response?.status === 401) {
-        navigate("/login");
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Failed to place order. Please try again.");
-      }
-    } finally {
-      setPlacingOrder(false);
-    }
+  const addressPayload = {
+    fullName: `${firstName} ${lastName}`,
+    phone,
+    pincode,
+    state: stateField,
+    city,
+    landmark: apartment || "",
   };
+
+  const items = cart.items.map(it => ({
+    product: it.product._id,
+    quantity: it.quantity,
+    price: it.product.price
+  }));
+
+  const customerDetails = {
+    name: `${firstName} ${lastName}`,
+    email,
+    phone
+  };
+
+  const totalAmount =
+    subtotal +
+    pricingConfig.taxAmount +
+    pricingConfig.shippingAmount +
+    pricingConfig.serviceCharge -
+    discount;
+
+  const body = {
+    items,
+    customerDetails,
+    shippingAddress: addressPayload,
+    totalAmount,
+    paymentMethod
+  };
+
+  setPlacingOrder(true);
+
+  try {
+    const res = await axios.post(
+      "http://localhost:8000/api/v1/order/create",
+      body,
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+      const orderId = res.data.orderId;
+
+      if (paymentMethod === "cod") {
+        navigate(`/order-confirmed/${orderId}`);
+      } else {
+        navigate(`/confirmation?order=${orderId}`);
+      }
+    }
+  } catch (err) {
+    console.error("Place order error", err);
+    setError(err.response?.data?.message || "Failed to place order.");
+  } finally {
+    setPlacingOrder(false);
+  }
+};
+
+
+
+
+
+
+  const fetchPricingConfig = async () => {
+  try {
+    const res = await axios.get("http://localhost:8000/api/v1/pricingConfig");
+    setPricingConfig({
+      taxAmount: res.data.config?.taxAmount || 0,
+      shippingAmount: res.data.config?.shippingAmount || 0,
+      serviceCharge: res.data.config?.serviceCharge || 0,
+    });
+  } catch (err) {
+    console.log("Pricing config error", err);
+  }
+};
+
 
   // ==========================
   // Loading
@@ -754,35 +792,64 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Totals */}
-              <div className="mt-6 space-y-3 text-sm md:text-base">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold">
-                    {shippingCharge === 0
-                      ? "FREE"
-                      : formatCurrency(shippingCharge)}
-                  </span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span>- {formatCurrency(discount)}</span>
-                  </div>
-                )}
-                <div className="border-t pt-4 flex justify-between items-center">
-                  <span className="text-base md:text-lg font-bold">
-                    Total
-                  </span>
-                  <span className="text-lg md:text-xl font-extrabold">
-                    {formatCurrency(total)}
-                  </span>
-                </div>
-              </div>
+             {/* Totals */}
+<div className="mt-6 space-y-3 text-sm md:text-base">
+
+  {/* Subtotal */}
+  <div className="flex justify-between text-gray-600">
+    <span>Subtotal</span>
+    <span>{formatCurrency(subtotal)}</span>
+  </div>
+
+  {/* Shipping (dynamic from pricingConfig) */}
+  <div className="flex justify-between text-gray-600">
+    <span>Shipping</span>
+    <span className="font-semibold">
+      {pricingConfig.shippingAmount === 0
+        ? "FREE"
+        : formatCurrency(pricingConfig.shippingAmount)}
+    </span>
+  </div>
+
+  {/* Tax (dynamic) */}
+  <div className="flex justify-between text-gray-600">
+    <span>Tax</span>
+    <span>{formatCurrency(pricingConfig.taxAmount)}</span>
+  </div>
+
+  {/* Service Charge (dynamic) */}
+  <div className="flex justify-between text-gray-600">
+    <span>Service Charge</span>
+    <span>{formatCurrency(pricingConfig.serviceCharge)}</span>
+  </div>
+
+  {/* Discount */}
+  {discount > 0 && (
+    <div className="flex justify-between text-green-600">
+      <span>Discount</span>
+      <span>- {formatCurrency(discount)}</span>
+    </div>
+  )}
+
+  {/* Final total */}
+  <div className="border-t pt-4 flex justify-between items-center">
+    <span className="text-base md:text-lg font-bold">Total</span>
+    <span className="text-lg md:text-xl font-extrabold">
+      {formatCurrency(
+        Math.max(
+          0,
+          subtotal +
+            pricingConfig.taxAmount +
+            pricingConfig.shippingAmount +
+            pricingConfig.serviceCharge -
+            discount
+        )
+      )}
+    </span>
+  </div>
+
+</div>
+
             </div>
           </aside>
         </div>

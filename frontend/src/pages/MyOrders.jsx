@@ -8,13 +8,13 @@ export default function MyOrders() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/v1/order", { withCredentials: true })
+      .get("https://raadi.onrender.com/api/v1/order", { withCredentials: true })
       .then((res) => setOrders(res.data.orders))
       .catch((err) => console.log("Order fetch error:", err));
   }, []);
 
   const downloadInvoice = (orderId) => {
-    window.open(`http://localhost:8000/api/v1/order/invoice/${orderId}`, "_blank");
+    window.open(`https://raadi.onrender.com/api/v1/order/invoice/${orderId}`, "_blank");
   };
 
   return (

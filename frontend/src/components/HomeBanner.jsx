@@ -6,7 +6,7 @@ export default function HomeBanner() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/v1/homeBanner/")
+      .get("https://raadi.onrender.com/api/v1/homeBanner/")
       .then((res) => setBanner(res.data.banner))
       .catch((err) => console.error("Banner fetch error:", err));
   }, []);

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8000/api/v1/gallery/";
+const API_BASE = "https://raadi.onrender.com/api/v1/gallery/";
 
 export default function GalleryCarousel() {
   const [images, setImages] = useState([]);

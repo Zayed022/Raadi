@@ -5,7 +5,7 @@ export default function AboutBanner() {
   const [banner, setBanner] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/v1/aboutBanner/")
+    axios.get("https://raadi.onrender.com/api/v1/aboutBanner/")
       .then(res => setBanner(res.data.banner))
       .catch(err => console.error("Banner fetch error:", err));
   }, []);

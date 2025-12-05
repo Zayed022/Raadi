@@ -27,7 +27,7 @@ export default function ShopProduct() {
 
   const fetchProducts = async () => {
   try {
-    const res = await axios.get("http://localhost:8000/api/v1/products/", {
+    const res = await axios.get("https://raadi.onrender.com/api/v1/products/", {
       params: {
         search,
         category: selectedCategory,
@@ -47,7 +47,7 @@ export default function ShopProduct() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/category/");
+      const res = await axios.get("https://raadi.onrender.com/api/v1/category/");
       setCategories(res.data.categories);
     } catch (err) {
       console.log("Category Fetch Error", err);
@@ -56,7 +56,7 @@ export default function ShopProduct() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/wishlist", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
         withCredentials: true,
       });
 
@@ -70,7 +70,7 @@ export default function ShopProduct() {
     try {
       if (wishlist.includes(productId)) {
         const res = await axios.delete(
-          "http://localhost:8000/api/v1/wishlist/remove",
+          "https://raadi.onrender.com/api/v1/wishlist/remove",
           {
             data: { productId },
             withCredentials: true,
@@ -82,7 +82,7 @@ export default function ShopProduct() {
         }
       } else {
         const res = await axios.post(
-          "http://localhost:8000/api/v1/wishlist/add",
+          "https://raadi.onrender.com/api/v1/wishlist/add",
           { productId },
           { withCredentials: true }
         );
@@ -98,7 +98,7 @@ export default function ShopProduct() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/cart", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
         withCredentials: true,
       });
 
@@ -115,7 +115,7 @@ export default function ShopProduct() {
   const addToCart = async (productId) => {
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/cart/add",
+        "https://raadi.onrender.com/api/v1/cart/add",
         { productId, quantity: 1 },
         { withCredentials: true }
       );
@@ -131,7 +131,7 @@ export default function ShopProduct() {
   const updateQuantity = async (productId, newQty) => {
     try {
       if (newQty <= 0) {
-        await axios.delete("http://localhost:8000/api/v1/cart/remove", {
+        await axios.delete("https://raadi.onrender.com/api/v1/cart/remove", {
           data: { productId },
           withCredentials: true,
         });
@@ -142,7 +142,7 @@ export default function ShopProduct() {
       }
 
       await axios.put(
-        "http://localhost:8000/api/v1/cart/update",
+        "https://raadi.onrender.com/api/v1/cart/update",
         { productId, quantity: newQty },
         { withCredentials: true }
       );

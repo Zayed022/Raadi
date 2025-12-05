@@ -23,7 +23,7 @@ export default function Cart() {
 
   const fetchPricingConfig = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/pricingConfig");
+      const res = await axios.get("https://raadi.onrender.com/api/v1/pricingConfig");
       setTax(res.data.taxAmount || 0);
       setShipping(res.data.shippingAmount || 0);
     } catch (err) {
@@ -33,7 +33,7 @@ export default function Cart() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/cart", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
         withCredentials: true,
       });
 
@@ -59,7 +59,7 @@ export default function Cart() {
       if (newQty <= 0) return removeItem(productId);
 
       const res = await axios.put(
-        "http://localhost:8000/api/v1/cart/update",
+        "https://raadi.onrender.com/api/v1/cart/update",
         { productId, quantity: newQty },
         { withCredentials: true }
       );
@@ -72,7 +72,7 @@ export default function Cart() {
 
   const removeItem = async (productId) => {
     try {
-      const res = await axios.delete("http://localhost:8000/api/v1/cart/remove", {
+      const res = await axios.delete("https://raadi.onrender.com/api/v1/cart/remove", {
         data: { productId },
         withCredentials: true,
       });
@@ -108,7 +108,7 @@ export default function Cart() {
   const applyPromo = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/cart/apply-promo",
+        "https://raadi.onrender.com/api/v1/cart/apply-promo",
         { code: promoCode },
         { withCredentials: true }
       );

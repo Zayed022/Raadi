@@ -15,7 +15,7 @@ export default function FeaturedProducts() {
     AOS.init({ duration: 1000, once: true });
 
     axios
-      .get("http://localhost:8000/api/v1/products/feature-products")
+      .get("https://raadi.onrender.com/api/v1/products/feature-products")
       .then((res) => setProducts(res.data.products))
       .catch((err) => console.log("Featured Product Fetch Error:", err));
 
@@ -24,7 +24,7 @@ export default function FeaturedProducts() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/wishlist", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
         withCredentials: true,
       });
 
@@ -39,7 +39,7 @@ export default function FeaturedProducts() {
     if (wishlist.includes(productId)) {
       // Remove from wishlist
       const res = await axios.delete(
-        "http://localhost:8000/api/v1/wishlist/remove",
+        "https://raadi.onrender.com/api/v1/wishlist/remove",
         {
           data: { productId },
           withCredentials: true,
@@ -51,7 +51,7 @@ export default function FeaturedProducts() {
     } else {
       // Add to wishlist
       const res = await axios.post(
-        "http://localhost:8000/api/v1/wishlist/add",
+        "https://raadi.onrender.com/api/v1/wishlist/add",
         { productId },
         { withCredentials: true }
       );

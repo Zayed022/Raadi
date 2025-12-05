@@ -18,7 +18,7 @@ export default function BestSeller() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/products/best-seller");
+      const res = await axios.get("https://raadi.onrender.com/api/v1/products/best-seller");
       setProducts(res.data.products || []);
     } catch (err) {
       console.log("Best Seller Fetch Error:", err);
@@ -27,7 +27,7 @@ export default function BestSeller() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/wishlist", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
         withCredentials: true,
       });
       setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
@@ -38,7 +38,7 @@ export default function BestSeller() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/cart", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
         withCredentials: true,
       });
       const map = {};
@@ -52,7 +52,7 @@ export default function BestSeller() {
   const handleWishlist = async (productId) => {
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/wishlist/add",
+        "https://raadi.onrender.com/api/v1/wishlist/add",
         { productId },
         { withCredentials: true }
       );
@@ -65,7 +65,7 @@ export default function BestSeller() {
   const handleAddToCart = async (productId) => {
     try {
       await axios.post(
-        "http://localhost:8000/api/v1/cart/add",
+        "https://raadi.onrender.com/api/v1/cart/add",
         { productId, quantity: 1 },
         { withCredentials: true }
       );
@@ -80,7 +80,7 @@ export default function BestSeller() {
       if (qty <= 0) return removeItem(productId);
 
       await axios.put(
-        "http://localhost:8000/api/v1/cart/update",
+        "https://raadi.onrender.com/api/v1/cart/update",
         { productId, quantity: qty },
         { withCredentials: true }
       );
@@ -93,7 +93,7 @@ export default function BestSeller() {
 
   const removeItem = async (productId) => {
     try {
-      await axios.delete("http://localhost:8000/api/v1/cart/remove", {
+      await axios.delete("https://raadi.onrender.com/api/v1/cart/remove", {
         data: { productId },
         withCredentials: true,
       });

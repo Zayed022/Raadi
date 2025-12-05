@@ -26,7 +26,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/v1/users/google-login",
+        "https://raadi.onrender.com/api/v1/users/google-login",
         userData,
         { withCredentials: true }
       );

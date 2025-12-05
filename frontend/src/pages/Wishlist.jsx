@@ -13,7 +13,7 @@ export default function Wishlist() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/wishlist/", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist/", {
         withCredentials: true,
       });
 
@@ -25,7 +25,7 @@ export default function Wishlist() {
 
   const removeItem = async (productId) => {
     try {
-      const res = await axios.delete("http://localhost:8000/api/v1/wishlist/remove", {
+      const res = await axios.delete("https://raadi.onrender.com/api/v1/wishlist/remove", {
         data: { productId },
         withCredentials: true,
       });

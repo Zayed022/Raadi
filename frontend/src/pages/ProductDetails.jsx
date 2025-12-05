@@ -16,7 +16,7 @@ import Footer from "../components/Footer";
  *
  * NOTE: adjust API_BASE if needed.
  */
-const API_BASE = "http://localhost:8000/api/v1";
+const API_BASE = "https://raadi.onrender.com/api/v1";
 
 function SkeletonCard() {
   return (

@@ -11,7 +11,7 @@ export default function TopProducts() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/v1/products/top-products")
+      .get("https://raadi.onrender.com/api/v1/products/top-products")
       .then((res) => setProducts(res.data.products))
       .catch((err) => console.log("Top product fetch error:", err));
 
@@ -20,7 +20,7 @@ export default function TopProducts() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/wishlist", {
+      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
         withCredentials: true,
       });
 
@@ -34,7 +34,7 @@ export default function TopProducts() {
     try {
       if (wishlist.includes(productId)) {
         const res = await axios.delete(
-          "http://localhost:8000/api/v1/wishlist/remove",
+          "https://raadi.onrender.com/api/v1/wishlist/remove",
           {
             data: { productId },
             withCredentials: true,
@@ -46,7 +46,7 @@ export default function TopProducts() {
         }
       } else {
         const res = await axios.post(
-          "http://localhost:8000/api/v1/wishlist/add",
+          "https://raadi.onrender.com/api/v1/wishlist/add",
           { productId },
           { withCredentials: true }
         );

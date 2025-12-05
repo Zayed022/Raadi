@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:8000/api/v1/promoCard/";
+const API_BASE = "https://raadi.onrender.com/api/v1/promoCard/";
 
 export default function PromoGrid() {
   const [cards, setCards] = useState([]);

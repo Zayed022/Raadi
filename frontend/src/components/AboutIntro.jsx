@@ -8,7 +8,7 @@ export default function AboutIntroSection() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/v1/aboutIntro/")
+      .get("https://raadi.onrender.com/api/v1/aboutIntro/")
       .then((res) => setData(res.data.intro))
       .catch((err) => console.error("AboutIntro fetch error:", err));
   }, []);

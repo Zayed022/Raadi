@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
+import Footer from "../components/Footer";
 
 /**
  * ProductDetails (responsive, production-like)
@@ -293,6 +294,7 @@ export default function ProductDetails() {
   }
 
   return (
+    <>
     <section className="min-h-screen px-4 py-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
 
@@ -549,6 +551,8 @@ export default function ProductDetails() {
 
 
     </section>
+    <Footer/>
+    </>
     
   );
 }

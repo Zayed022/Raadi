@@ -1,5 +1,6 @@
 import { User } from "../models/user.models.js";
 import jwt from "jsonwebtoken";
+const isProd = process.env.NODE_ENV === "production";
 
 // ===========================
 // Generate Access + Refresh Tokens
@@ -45,14 +46,16 @@ export const googleLogin = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
   httpOnly: true,
-  secure: false,        // true in production under https
-  sameSite: "lax",      // or "none" with https
+  secure: isProd,       // TRUE on production
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
 });
 
 res.cookie("refreshToken", refreshToken, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
 });
 
 return res.status(200).json({

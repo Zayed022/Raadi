@@ -319,3 +319,82 @@ export const generateInvoice = async (req, res) => {
 };
 
 
+// ===========================
+// Admin: Get All Orders (Paginated + Filters)
+// ===========================
+export const getAllOrders = async (req, res) => {
+  try {
+    let {
+      page = 1,
+      limit = 20,
+      status,
+      search,
+      startDate,
+      endDate
+    } = req.query;
+
+    page = Number(page);
+    limit = Number(limit);
+
+    let query = {};
+
+    // -------------------------
+    // Status Filter
+    // -------------------------
+    if (status) {
+      query.orderStatus = status;
+    }
+
+    // -------------------------
+    // Search by Name / Phone / OrderId
+    // -------------------------
+    if (search) {
+      const regex = new RegExp(search, "i");
+
+      query.$or = [
+        { "customerDetails.name": regex },
+        { "customerDetails.phone": regex },
+        { _id: search } // direct search by orderId
+      ];
+    }
+
+    // -------------------------
+    // Date Range Filter
+    // -------------------------
+    if (startDate || endDate) {
+      query.createdAt = {};
+
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate)   query.createdAt.$lte = new Date(endDate);
+    }
+
+    // -------------------------
+    // FETCH ORDERS
+    // -------------------------
+    const orders = await Order.find(query)
+      .populate("items.product")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const totalOrders = await Order.countDocuments(query);
+
+    return res.status(200).json({
+      success: true,
+      totalOrders,
+      page,
+      pages: Math.ceil(totalOrders / limit),
+      orders
+    });
+
+  } catch (error) {
+    console.error("Get All Orders Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+
+

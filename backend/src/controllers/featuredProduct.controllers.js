@@ -37,3 +37,8 @@ export const getFeaturedProducts = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const deleteFeaturedProducts = async (req, res) => {
+  await FeaturedProduct.findByIdAndDelete(req.params.id);
+  res.status(200).json({ success: true, message: "Deleted successfully" });
+};

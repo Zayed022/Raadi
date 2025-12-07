@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createAboutIntro,
+  deleteAboutIntro,
   getAboutIntro,
 } from "../controllers/aboutIntro.controllers.js";
 
@@ -18,5 +19,7 @@ router.post(
 
 // Public get section
 router.get("/", getAboutIntro);
+router.delete("/delete", deleteAboutIntro);
+
 
 export default router;

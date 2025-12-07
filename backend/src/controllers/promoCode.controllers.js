@@ -37,3 +37,44 @@ export const applyPromo = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+
+// GET all promo codes
+export const getAllPromoCodes = async (req, res) => {
+  try {
+    const codes = await PromoCode.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, codes });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+// CREATE
+export const createPromoCode = async (req, res) => {
+  try {
+    const promo = await PromoCode.create(req.body);
+    res.status(201).json({ success: true, promo });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+// UPDATE
+export const updatePromoCode = async (req, res) => {
+  try {
+    const promo = await PromoCode.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, promo });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+// DELETE
+export const deletePromoCode = async (req, res) => {
+  try {
+    await PromoCode.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};

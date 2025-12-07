@@ -1,5 +1,5 @@
 import express from "express";
-import { createFeaturedProduct, getFeaturedProducts } from "../controllers/featuredProduct.controllers.js";
+import { createFeaturedProduct, deleteFeaturedProducts, getFeaturedProducts } from "../controllers/featuredProduct.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 
 const router = express.Router();
@@ -11,5 +11,6 @@ router.post(
 );
 
 router.get("/", getFeaturedProducts);
+router.delete("/:id",  deleteFeaturedProducts);
 
 export default router;

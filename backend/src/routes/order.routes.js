@@ -4,7 +4,8 @@ import {
   initiatePayment,
   easybuzzWebhook,
   getUserOrders,
-  generateInvoice
+  generateInvoice,
+  getAllOrders
 } from "../controllers/order.controllers.js";
 
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -17,5 +18,7 @@ router.post("/webhook", easybuzzWebhook);
 router.get("/invoice/:id", verifyJWT, generateInvoice);
 
 router.get("/", verifyJWT, getUserOrders);
+router.get("/all", getAllOrders);
+
 
 export default router;

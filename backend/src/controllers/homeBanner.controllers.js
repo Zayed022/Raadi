@@ -33,3 +33,34 @@ export const getActiveBanner = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const deleteHomeBanner = async (req, res) => {
+  try {
+    // Find latest banner (same as your get logic)
+    const banner = await HomeBanner.findOne().sort({ createdAt: -1 });
+
+    if (!banner) {
+      return res.status(404).json({
+        success: false,
+        message: "No banner found to delete"
+      });
+    }
+
+    // OPTIONAL: delete image from cloudinary
+    
+
+    await banner.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "Home banner deleted successfully"
+    });
+
+  } catch (err) {
+    console.error("Delete Home Banner Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

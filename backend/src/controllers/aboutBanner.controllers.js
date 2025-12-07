@@ -31,3 +31,35 @@ export const getAboutBanner = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+
+export const deleteAboutBanner = async (req, res) => {
+  try {
+    // Find latest banner (same as your get logic)
+    const banner = await AboutBanner.findOne().sort({ createdAt: -1 });
+
+    if (!banner) {
+      return res.status(404).json({
+        success: false,
+        message: "No banner found to delete"
+      });
+    }
+
+    // OPTIONAL: delete image from cloudinary
+    
+
+    await banner.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "About banner deleted successfully"
+    });
+
+  } catch (err) {
+    console.error("Delete About Banner Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

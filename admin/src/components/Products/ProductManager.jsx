@@ -139,6 +139,7 @@ export default function ProductManager() {
             <tr>
               <th className="p-3 text-left">Image</th>
               <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-left">Description</th>
               <th className="p-3 text-left">Price</th>
               <th className="p-3 text-left">Stock</th>
               <th className="p-3 text-left">Category</th>
@@ -161,6 +162,7 @@ export default function ProductManager() {
 
                 {/* NAME */}
                 <td className="p-3 font-medium">{p.name}</td>
+                <td className="p-3 font-medium">{p.description}</td>
 
                 {/* PRICE */}
                 <td className="p-3">₹{p.price}</td>

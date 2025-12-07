@@ -29,19 +29,59 @@ const navItems = [
     icon: <FiLayers className="text-lg" />,
   },
   {
-    label: "Banners",
-    to: "/admin/banners",
+    label: "Home Banners",
+    to: "/home/banners",
     icon: <FiImage className="text-lg" />,
   },
   {
+    label: "About Banners",
+    to: "/about/banners",
+    icon: <FiImage className="text-lg" />,
+  },
+  {
+    label: "About Intro",
+    to: "/about/intro",
+    icon: <FiImage className="text-lg" />,
+  },
+  {
+    label: "Special Products",
+    to: "/special",
+    icon: <FiBox className="text-lg" />,
+  },
+  {
+    label: "Galley",
+    to: "/gallery",
+    icon: <FiShoppingBag className="text-lg" />,
+  },
+  {
+    label: "Video",
+    to: "/video",
+    icon: <FiShoppingBag className="text-lg" />,
+  },
+   {
     label: "Orders",
-    to: "/admin/orders",
+    to: "/orders",
     icon: <FiShoppingBag className="text-lg" />,
   },
   {
     label: "Users",
     to: "/admin/users",
     icon: <FiUsers className="text-lg" />,
+  },
+  {
+    label: "Promo Card",
+    to: "/card",
+    icon: <FiSettings className="text-lg" />,
+  },
+  {
+    label: "Promo Code",
+    to: "/code",
+    icon: <FiSettings className="text-lg" />,
+  },
+   {
+    label: "Pricing",
+    to: "/pricing",
+    icon: <FiSettings className="text-lg" />,
   },
   {
     label: "Settings",

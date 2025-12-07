@@ -72,3 +72,34 @@ export const getAboutIntro = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+export const deleteAboutIntro = async (req, res) => {
+  try {
+    // fetch the latest intro same as your GET logic
+    const intro = await AboutIntro.findOne().sort({ createdAt: -1 });
+
+    if (!intro) {
+      return res.status(404).json({
+        success: false,
+        message: "No About Intro section found to delete"
+      });
+    }
+
+    // OPTIONAL: remove existing image from Cloudinary
+   
+
+    await intro.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "About Intro section deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete AboutIntro Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

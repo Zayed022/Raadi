@@ -1,5 +1,5 @@
 import express from "express";
-import { createHomeBanner, getActiveBanner } from "../controllers/homeBanner.controllers.js";
+import { createHomeBanner, deleteHomeBanner, getActiveBanner } from "../controllers/homeBanner.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 
 
@@ -14,5 +14,6 @@ router.post(
 );
 
 router.get("/", getActiveBanner);
+router.delete("/delete", deleteHomeBanner);
 
 export default router;

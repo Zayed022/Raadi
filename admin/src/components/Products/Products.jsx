@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 const actions = [
   { title: 'Add Product', path: '/products/add' },
   { title: 'Manage Product', path: '/products/manage' },
-  { title: 'Delete Product', path: '/products/delete' },
-  { title: 'Get Product', path: '/products/get-products' },
+  { title: 'Best Seller', path: '/products/bestSeller' },
+  { title: 'Feature Product', path: '/products/feature' },
   { title: 'Get Product By ID', path: '/products/get-by-id' },
   { title: 'Get All Products', path: '/products/all' },
   { title: 'Categories Section', path: '/products/categories' },

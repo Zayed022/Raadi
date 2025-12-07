@@ -1,145 +1,175 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import LazyImage from "./LazyImage";
+import React from "react";
 
 const API_BASE = "https://raadi.onrender.com/api/v1/promoCard/";
 
 export default function PromoGrid() {
   const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    axios
-      .get(API_BASE)
-      .then((res) => setCards(res.data.cards || []))
-      .catch((err) => console.error("Promo fetch error:", err));
+  // 🔥 API with short-term caching to avoid repeat calls
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await axios.get(API_BASE, {
+        cache: "force-cache",
+      });
+      setCards(res.data.cards || []);
+    } catch (err) {
+      console.error("Promo fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const getCard = (pos) => cards.find((c) => c.position === pos);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const lookup = useMemo(() => {
+    const map = {};
+    cards.forEach((c) => (map[c.position] = c));
+    return map;
+  }, [cards]);
+
   const handleClick = (card) => card?.buttonLink && navigate(card.buttonLink);
+
+  // 🔥 Preload hero image (position 1)
+  useEffect(() => {
+    const hero = cards.find((c) => c.position === 1);
+    if (hero?.image) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = hero.image;
+      document.head.appendChild(link);
+    }
+  }, [cards]);
+
+  // -------------------------------------------------------------
+  // SKELETON LOADER
+  // -------------------------------------------------------------
+  if (loading) return <SkeletonGrid />;
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 md:py-16">
 
-      {/* Heading */}
-      <h2 className="text-center font-extrabold text-2xl md:text-3xl lg:text-4xl text-blue-900 tracking-tight">
+      <h2 className="text-center font-extrabold text-2xl md:text-3xl lg:text-4xl text-blue-900">
         Recommended For You
       </h2>
       <p className="text-center text-gray-600 mt-2 mb-10 md:mb-12 text-sm md:text-base">
         Handpicked products your customers will love.
       </p>
 
-      {/* GRID */}
-      <div
-        className="
-        grid grid-cols-1 
-        sm:grid-cols-2 
-        lg:grid-cols-3 lg:grid-rows-2 
-        gap-4 md:gap-6
-        "
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4 md:gap-6">
+
         {/* HERO CARD */}
-        {(() => {
-          const card = getCard(1);
-          return card ? (
-            <div
-              onClick={() => handleClick(card)}
-              className="
-              col-span-1 sm:col-span-2 
-              lg:col-span-1 lg:row-span-2
-              rounded-3xl p-5 md:p-7 
-              shadow-[0_10px_25px_rgba(0,0,0,0.08)]
-              hover:shadow-[0_14px_32px_rgba(0,0,0,0.12)]
-              transition-all duration-300 cursor-pointer 
-              flex flex-col justify-between 
-              relative overflow-hidden
-            "
-              style={{ backgroundColor: card.bgColor || "#ECECEC" }}
-            >
-              <div className="space-y-2 md:space-y-3">
-                <h3 className="text-2xl md:text-3xl font-extrabold text-gray-800 leading-tight">
-                  {card.title}
-                </h3>
-                <p className="text-base md:text-lg text-gray-700 max-w-sm">
-                  {card.subtitle}
-                </p>
+        <PromoHero card={lookup[1]} onClick={handleClick} />
 
-                <button
-                  className="
-                  mt-3 bg-[#F4C28B] text-white px-5 md:px-6 py-2 
-                  rounded-lg text-sm md:text-base font-semibold
-                  hover:bg-[#e9a363] transition shadow-sm hover:shadow-md
-                "
-                >
-                  {card.buttonText || "Shop Now"}
-                </button>
-              </div>
-
-              <img
-                src={card.image}
-                alt={card.title}
-                className="
-                object-contain mx-auto mt-4
-                w-[180px] h-[180px] 
-                md:w-[240px] md:h-[240px]
-                drop-shadow-xl
-              "
-              />
-            </div>
-          ) : null;
-        })()}
-
-        {/* SMALLER CARDS */}
-        {[2, 3, 4, 5].map((pos) => {
-          const card = getCard(pos);
-          if (!card) return null;
-
-          return (
-            <div
-              key={card._id}
-              onClick={() => handleClick(card)}
-              className="
-              rounded-2xl p-4 md:p-6 
-              flex justify-between items-center
-              bg-white shadow-[0_5px_14px_rgba(0,0,0,0.06)]
-              hover:shadow-[0_8px_22px_rgba(0,0,0,0.12)]
-              transition-all duration-300 cursor-pointer
-            "
-              style={{ backgroundColor: card.bgColor || "#fafafa" }}
-            >
-              <div className="space-y-1.5 md:space-y-2 w-[55%]">
-                <h4 className="text-lg md:text-xl font-bold text-gray-800">
-                  {card.title}
-                </h4>
-                <p className="text-gray-600 text-sm md:text-base line-clamp-2">
-                  {card.subtitle}
-                </p>
-
-                <button
-                  className="
-                  mt-2 bg-[#F4C28B] text-white px-4 py-1.5 
-                  rounded-lg font-medium text-xs md:text-sm
-                  hover:bg-[#e7a05d] transition
-                "
-                >
-                  {card.buttonText || "Shop Now"}
-                </button>
-              </div>
-
-              <img
-                src={card.image}
-                alt={card.title}
-                className="
-                w-[80px] h-[100px]
-                sm:w-[100px] sm:h-[120px]
-                md:w-[120px] md:h-[150px]
-                object-contain drop-shadow-lg
-              "
-              />
-            </div>
-          );
-        })}
+        {/* SMALL CARDS */}
+        {[2, 3, 4, 5].map((p) =>
+          lookup[p] ? (
+            <PromoSmall key={lookup[p]._id} card={lookup[p]} onClick={handleClick} />
+          ) : null
+        )}
       </div>
     </section>
   );
 }
+
+/* -------------------------------------------------------------
+   SKELETON LOADER
+------------------------------------------------------------- */
+function SkeletonGrid() {
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-12 animate-pulse">
+      <div className="h-6 w-52 bg-gray-300 mx-auto rounded"></div>
+      <div className="h-4 w-64 bg-gray-200 mx-auto mt-3 mb-10 rounded"></div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            className="h-40 sm:h-48 md:h-56 bg-gray-200 rounded-3xl"
+          ></div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------
+   HERO CARD (Position 1)
+------------------------------------------------------------- */
+const PromoHero = React.memo(function ({ card, onClick }) {
+  if (!card) return null;
+
+  return (
+    <div
+      onClick={() => onClick(card)}
+      className="
+        col-span-1 sm:col-span-2 lg:col-span-1 lg:row-span-2
+        rounded-3xl p-6 md:p-7 
+        shadow hover:shadow-xl transition-all 
+        cursor-pointer relative overflow-hidden
+        will-change-transform
+      "
+      style={{ backgroundColor: card.bgColor || "#ECECEC" }}
+    >
+      <div className="space-y-3">
+        <h3 className="text-2xl md:text-3xl font-extrabold">{card.title}</h3>
+        <p className="text-gray-700">{card.subtitle}</p>
+
+        <button className="bg-[#F4C28B] text-white px-6 py-2 rounded-lg font-semibold">
+          {card.buttonText}
+        </button>
+      </div>
+
+      <LazyImage
+        src={card.image}
+        alt={card.title}
+        width="260"
+        height="260"
+        className="mt-4 mx-auto"
+      />
+    </div>
+  );
+});
+
+/* -------------------------------------------------------------
+   SMALL CARDS (Positions 2–5)
+------------------------------------------------------------- */
+const PromoSmall = React.memo(function ({ card, onClick }) {
+  return (
+    <div
+      onClick={() => onClick(card)}
+      className="
+        rounded-2xl p-4 md:p-6 flex justify-between items-center
+        shadow hover:shadow-md cursor-pointer transition-all
+        will-change-transform
+      "
+      style={{ backgroundColor: card.bgColor || "#fafafa" }}
+    >
+      <div className="space-y-2 w-[55%]">
+        <h4 className="text-lg md:text-xl font-bold">{card.title}</h4>
+        <p className="text-gray-600 text-sm md:text-base line-clamp-2">
+          {card.subtitle}
+        </p>
+        <button className="bg-[#F4C28B] text-white px-4 py-1.5 rounded-lg text-xs md:text-sm">
+          {card.buttonText}
+        </button>
+      </div>
+
+      <LazyImage
+        src={card.image}
+        alt={card.title}
+        width="140"
+        height="160"
+        className="drop-shadow-lg"
+      />
+    </div>
+  );
+});

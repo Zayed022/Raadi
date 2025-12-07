@@ -3,50 +3,62 @@ import axios from "axios";
 
 export default function HomeBanner() {
   const [banner, setBanner] = useState(null);
+  const [loaded, setLoaded] = useState(false); // track image load for fade-in
 
   useEffect(() => {
     axios
-      .get("https://raadi.onrender.com/api/v1/homeBanner/")
+      .get("https://raadi.onrender.com/api/v1/homeBanner/", {
+        cache: "force-cache",
+      })
       .then((res) => setBanner(res.data.banner))
       .catch((err) => console.error("Banner fetch error:", err));
   }, []);
 
-  if (!banner) {
-    return (
-      <div className="w-full h-[50vh] md:h-[70vh] bg-gray-200 animate-pulse"></div>
-    );
-  }
-
   return (
     <section className="relative w-full overflow-hidden">
-      
-      {/* Background Image Container */}
-      <div
-        className="
-          w-full 
-          h-[55vh] 
-          sm:h-[65vh] 
-          md:h-[80vh] 
-          lg:h-[90vh] 
-          xl:h-[95vh] 
-          2xl:h-[100vh]
-          relative
-        "
-        style={{
-          backgroundImage: `url(${banner.bannerImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: banner.bgColor || "#f5d7b0",
-        }}
-      >
-        {/* Overlay (transparent but ready for future use) */}
-        <div className="absolute inset-0 bg-black/0"></div>
-      </div>
+      {/* Placeholder skeleton until image loads */}
+      {!banner ? (
+        <div className="w-full h-[55vh] sm:h-[65vh] md:h-[80vh] lg:h-[90vh] bg-gray-200 animate-pulse"></div>
+      ) : (
+        <div
+          className="
+            w-full 
+            h-[55vh] 
+            sm:h-[65vh] 
+            md:h-[80vh] 
+            lg:h-[90vh]
+            relative
+            overflow-hidden
+          "
+          style={{
+            backgroundColor: banner.bgColor || "#f5d7b0",
+          }}
+        >
+          {/* Optimized Banner Image */}
+          <img
+            loading="lazy"
+            src={banner.bannerImage}
+            alt="Home Banner"
+            onLoad={() => setLoaded(true)}
+            className={`
+              w-full h-full object-cover
+              transition-opacity duration-700
+              ${loaded ? "opacity-100" : "opacity-0"}
+            `}
+          />
 
-      {/* Optional clickable CTA Future Section */}
-      {/* (currently empty per requirement) */}
-      <div className="absolute inset-0 flex items-center justify-center"></div>
+          {/* Low-quality blurry preview while loading */}
+          {!loaded && (
+            <div
+              className="
+              absolute inset-0 
+              bg-gray-300 blur-xl 
+              animate-pulse
+            "
+            ></div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

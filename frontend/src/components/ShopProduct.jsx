@@ -337,71 +337,81 @@ export default function ShopProduct() {
           {/* PRODUCTS */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
 
-            {products.map((p) => (
-              <div
-                key={p._id}
-                onClick={() => openProductDetails(p._id)}
-                className="bg-white rounded-xl shadow-md overflow-hidden p-3 hover:-translate-y-1 hover:shadow-lg transition cursor-pointer"
-              >
-                <div className="relative bg-[#f5f5f7] rounded-lg p-4 flex items-center justify-center h-40 sm:h-48">
-                  <img
-                    src={p.images[0]}
-                    alt={p.name}
-                    className="w-full h-full object-contain transition duration-300"
-                    loading="lazy" // 🔥 prevents lag
-                  />
+           {products.map((p) => (
+  <div
+    key={p._id}
+    onClick={() => openProductDetails(p._id)}
+    className="bg-white rounded-xl shadow-md overflow-hidden p-3 hover:-translate-y-1 hover:shadow-lg transition cursor-pointer"
+  >
+    <div className="relative bg-[#f5f5f7] rounded-lg p-4 flex items-center justify-center h-40 sm:h-48">
+      <img
+        src={p.images[0]}
+        alt={p.name}
+        className="w-full h-full object-contain transition duration-300"
+        loading="lazy"
+      />
 
-                  <button
-                    className="absolute top-3 right-3 z-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleWishlist(p._id);
-                    }}
-                  >
-                    {wishlist.includes(p._id) ? (
-                      <FaHeart size={20} className="text-orange-500" />
-                    ) : (
-                      <FiHeart size={20} className="text-gray-600 hover:text-orange-500" />
-                    )}
-                  </button>
-                </div>
+      <button
+        className="absolute top-3 right-3 z-50"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleWishlist(p._id);
+        }}
+      >
+        {wishlist.includes(p._id) ? (
+          <FaHeart size={20} className="text-orange-500" />
+        ) : (
+          <FiHeart size={20} className="text-gray-600 hover:text-orange-500" />
+        )}
+      </button>
+    </div>
 
-                <h3 className="mt-3 font-semibold text-base">{p.name}</h3>
-                <p className="text-gray-500 line-through text-xs">₹{p.mrp}</p>
-                <p className="text-lg font-bold">₹{p.price}</p>
+    <h3 className="mt-3 font-semibold text-base">{p.name}</h3>
+    <p className="text-gray-500 line-through text-xs">₹{p.mrp}</p>
+    <p className="text-lg font-bold">₹{p.price}</p>
 
-                {cart[p._id] ? (
-                  <div
-                    className="mt-3 flex items-center justify-between bg-orange-500 text-white rounded-md py-1.5 px-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => updateQuantity(p._id, cart[p._id] - 1)}
-                      className="text-lg font-bold"
-                    >
-                      –
-                    </button>
-                    <span className="text-base font-semibold">{cart[p._id]}</span>
-                    <button
-                      onClick={() => updateQuantity(p._id, cart[p._id] + 1)}
-                      className="text-lg font-bold"
-                    >
-                      +
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(p._id);
-                    }}
-                    className="w-full mt-3 bg-orange-500 text-white py-1.5 rounded-md hover:bg-orange-600"
-                  >
-                    Add to Cart
-                  </button>
-                )}
-              </div>
-            ))}
+    {/* 🟠 OUT OF STOCK CONDITION */}
+    {p.stock === 0 ? (
+      <button
+        className="w-full mt-3 bg-gray-300 text-gray-600 py-1.5 rounded-md cursor-not-allowed"
+        onClick={(e) => e.stopPropagation()}
+        disabled
+      >
+        Out of Stock
+      </button>
+    ) : cart[p._id] ? (
+      <div
+        className="mt-3 flex items-center justify-between bg-orange-500 text-white rounded-md py-1.5 px-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={() => updateQuantity(p._id, cart[p._id] - 1)}
+          className="text-lg font-bold"
+        >
+          –
+        </button>
+        <span className="text-base font-semibold">{cart[p._id]}</span>
+        <button
+          onClick={() => updateQuantity(p._id, cart[p._id] + 1)}
+          className="text-lg font-bold"
+        >
+          +
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          addToCart(p._id);
+        }}
+        className="w-full mt-3 bg-orange-500 text-white py-1.5 rounded-md hover:bg-orange-600"
+      >
+        Add to Cart
+      </button>
+    )}
+  </div>
+))}
+
 
           </div>
         </div>

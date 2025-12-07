@@ -32,7 +32,7 @@ router.post(
   createProduct
 );
 
-router.put("/:id", verifyJWT, updateProduct);
+router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 router.get("/recommended/:productId", getRecommendedProducts);
 

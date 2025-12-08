@@ -4,7 +4,7 @@ import Cart from "../models/cart.models.js";
 export const applyPromo = async (req, res) => {
   try {
     const { code } = req.body;
-    const userId = req.user._id;
+    
 
     const promo = await PromoCode.findOne({ code, isActive: true });
 

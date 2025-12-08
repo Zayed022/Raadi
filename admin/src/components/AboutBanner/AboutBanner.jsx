@@ -108,18 +108,24 @@ export default function AdminAboutBanner() {
             Select Banner Image
           </label>
 
-          <div className="border-2 border-dashed border-gray-400 rounded-xl p-5 flex flex-col items-center justify-center text-gray-600 hover:border-orange-500 transition cursor-pointer">
-            <FiUpload size={35} />
-            <p className="mt-2">Click to upload</p>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChange}
-              id="bannerUpload"
-            />
-            <label htmlFor="bannerUpload" className="absolute inset-0 cursor-pointer"></label>
-          </div>
+          <div
+  className="border-2 border-dashed border-gray-400 rounded-xl p-5 
+             flex flex-col items-center justify-center text-gray-600 
+             hover:border-orange-500 transition cursor-pointer relative"
+  onClick={() => document.getElementById("bannerUpload").click()}
+>
+  <FiUpload size={35} />
+  <p className="mt-2">Click to upload</p>
+
+  <input
+    type="file"
+    id="bannerUpload"
+    accept="image/*"
+    className="hidden"
+    onChange={handleImageChange}
+  />
+</div>
+
 
           {preview && (
             <div className="mt-4">

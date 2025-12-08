@@ -139,7 +139,7 @@ export default function Checkout() {
   // ==========================
   // Coupon (simple demo logic)
   // ==========================
-  const applyCoupon = async () => {
+  const applyCoupon = async () => { 
   if (!couponCode.trim()) {
     setCouponMessage({
       type: "error",
@@ -152,17 +152,10 @@ export default function Checkout() {
   setCouponMessage(null);
 
   try {
-    const token = localStorage.getItem("token");
-
     const res = await axios.post(
       "https://raadi.onrender.com/api/v1/promoCode/apply-promo",
       { code: couponCode },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      }
+      { withCredentials: true }
     );
 
     if (res.data.success) {
@@ -189,6 +182,7 @@ export default function Checkout() {
     setCouponApplying(false);
   }
 };
+
 
 
 

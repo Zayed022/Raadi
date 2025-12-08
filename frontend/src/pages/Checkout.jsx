@@ -55,7 +55,7 @@ export default function Checkout() {
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [tax, setTax] = useState(0);
-    const [shipping, setShipping] = useState(0);
+  const [shipping, setShipping] = useState(0);
   
 
   // ==========================
@@ -140,45 +140,57 @@ export default function Checkout() {
   // Coupon (simple demo logic)
   // ==========================
   const applyCoupon = async () => {
-    if (!couponCode.trim()) {
-      setCouponMessage({
-        type: "error",
-        text: "Enter coupon code",
-      });
-      return;
-    }
+  if (!couponCode.trim()) {
+    setCouponMessage({
+      type: "error",
+      text: "Enter a coupon code",
+    });
+    return;
+  }
 
-    setCouponApplying(true);
-    setCouponMessage(null);
+  setCouponApplying(true);
+  setCouponMessage(null);
 
-    try {
-      // Demo: RAADI10 = 10% off
-      await new Promise((r) => setTimeout(r, 600));
-      if (couponCode.toLowerCase() === "raadi10") {
-        const discountValue = Math.round(subtotal * 0.1);
-        setCouponMessage({
-          type: "success",
-          text: `Applied: ${formatCurrency(discountValue)} off`,
-          applied: true,
-          discountValue,
-        });
-      } else {
-        setCouponMessage({
-          type: "error",
-          text: "Invalid or expired coupon",
-          applied: false,
-        });
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.post(
+      "https://raadi.onrender.com/api/v1/promoCode/apply-promo",
+      { code: couponCode },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
       }
-    } catch (err) {
-      console.error("Apply coupon error", err);
+    );
+
+    if (res.data.success) {
+      const discountValue = res.data.discount;
+
       setCouponMessage({
-        type: "error",
-        text: "Could not apply coupon",
+        type: "success",
+        text: `Coupon applied! You saved ₹${discountValue}`,
+        discountValue,
+        applied: true,
       });
-    } finally {
-      setCouponApplying(false);
     }
-  };
+  } catch (err) {
+    let msg = "Unable to apply promo code";
+
+    if (err.response?.data?.message) msg = err.response.data.message;
+
+    setCouponMessage({
+      type: "error",
+      text: msg,
+      applied: false,
+    });
+  } finally {
+    setCouponApplying(false);
+  }
+};
+
+
 
   // ==========================
   // Validation

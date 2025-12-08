@@ -36,16 +36,19 @@ export default function HomeBanner() {
         >
           {/* Optimized Banner Image */}
           <img
-            loading="lazy"
-            src={banner.bannerImage}
-            alt="Home Banner"
-            onLoad={() => setLoaded(true)}
-            className={`
-              w-full h-full object-cover
-              transition-opacity duration-700
-              ${loaded ? "opacity-100" : "opacity-0"}
-            `}
-          />
+  loading="lazy"
+  src={banner.bannerImage}
+  alt="Home Banner"
+  onLoad={() => setLoaded(true)}
+  className={`
+    w-full h-full
+    object-contain       
+    sm:object-cover      
+    transition-opacity duration-700
+    ${loaded ? "opacity-100" : "opacity-0"}
+  `}
+/>
+
 
           {/* Low-quality blurry preview while loading */}
           {!loaded && (

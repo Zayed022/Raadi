@@ -1,6 +1,6 @@
 import SpecialProduct from "../models/specialProduct.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import Product from "../models/product.models.js"
+
 
 // CREATE Special Product Banner
 import Product from "../models/product.models.js";

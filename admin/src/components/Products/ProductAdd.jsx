@@ -173,18 +173,20 @@ export default function ProductAdd() {
 
           {/* Category */}
           <select
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            className="border p-3 rounded-lg w-full"
-          >
-            <option value="">Select Category *</option>
-            {categories.map((cat) => (
-              <option key={cat._id} value={cat.name}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+  name="category"
+  value={form.category}
+  onChange={handleChange}
+  className="border p-3 rounded-lg w-full"
+>
+  <option value="">Select Category *</option>
+
+  {categories.map((cat) => (
+    <option key={cat._id} value={cat._id}>
+      {cat.name}
+    </option>
+  ))}
+</select>
+
         </div>
 
         {/* Description */}

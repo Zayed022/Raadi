@@ -105,23 +105,49 @@ export default function Cart() {
     setFinalTotal(calculatedFinal);
   };
 
-  const applyPromo = async () => {
-    try {
-      const res = await axios.post(
-        "https://raadi.onrender.com/api/v1/cart/apply-promo",
-        { code: promoCode },
-        { withCredentials: true }
-      );
+  const applyPromo = async () => { 
+  if (!couponCode.trim()) {
+    setCouponMessage({
+      type: "error",
+      text: "Enter a coupon code",
+    });
+    return;
+  }
 
-      if (res.data.success) {
-        setDiscount(res.data.discount);
-        setFinalTotal(res.data.finalTotal);
-        setAppliedCode(promoCode);
-      }
-    } catch (err) {
-      console.log("Promo Error:", err);
+  setCouponApplying(true);
+  setCouponMessage(null);
+
+  try {
+    const res = await axios.post(
+      "https://raadi.onrender.com/api/v1/promoCode/apply-promo",
+      { code: couponCode },
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+      const discountValue = res.data.discount;
+
+      setCouponMessage({
+        type: "success",
+        text: `Coupon applied! You saved ₹${discountValue}`,
+        discountValue,
+        applied: true,
+      });
     }
-  };
+  } catch (err) {
+    let msg = "Unable to apply promo code";
+
+    if (err.response?.data?.message) msg = err.response.data.message;
+
+    setCouponMessage({
+      type: "error",
+      text: msg,
+      applied: false,
+    });
+  } finally {
+    setCouponApplying(false);
+  }
+};
 
   const removePromo = () => {
     setAppliedCode("");

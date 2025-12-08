@@ -169,15 +169,18 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
-
 export const generateInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const order = await Order.findById(orderId).populate("items.product");
 
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    const order = await Order.findById(orderId)
+      .populate("items.product")
+      .lean();
 
-    // ------------ PDF INITIAL SETUP ------------
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
     const doc = new PDFDocument({ size: "A4", margin: 40 });
 
     res.setHeader("Content-Type", "application/pdf");
@@ -186,39 +189,32 @@ export const generateInvoice = async (req, res) => {
       `attachment; filename=invoice-${orderId}.pdf`
     );
 
+    // Start PDF stream BEFORE writing content
     doc.pipe(res);
 
-    // ------------ LOGO + HEADER -------------
-    const logoPath = path.join(process.cwd(), "public", "temp", "Raadi.png");
-
-    try {
-      doc.image(logoPath, 40, 20, { width: 90 });
-    } catch (e) {
-      console.log("Logo not loaded:", e.message);
-    }
-
-    doc.fontSize(26).font("Helvetica-Bold").text("INVOICE", 350, 35);
-
-    doc.moveDown(3);
-
-    // ------------ ORDER INFO ------------
-    doc.fontSize(12).font("Helvetica");
-
-    doc.text(`Invoice No: INV-${orderId}`);
-    doc.text(`Order ID: ${orderId}`);
-    doc.text(`Placed On: ${new Date(order.createdAt).toLocaleString()}`);
-    doc.text(`Payment Status: ${order.paymentInfo.status.toUpperCase()}`);
-    doc.text(`Order Status: ${order.orderStatus.toUpperCase()}`);
+    // -------------------------------
+    // HEADER
+    // -------------------------------
+    doc.fontSize(26).font("Helvetica-Bold").text("INVOICE", 40, 30);
 
     doc.moveDown(2);
 
-    // ------------ ADDRESS ------------
+    doc.fontSize(12).font("Helvetica");
+    doc.text(`Invoice No: INV-${orderId}`);
+    doc.text(`Order ID: ${orderId}`);
+    doc.text(`Order Date: ${new Date(order.createdAt).toLocaleString()}`);
+    doc.text(`Payment Status: ${order.paymentInfo.status}`);
+    doc.text(`Order Status: ${order.orderStatus}`);
+
+    doc.moveDown(2);
+
+    // -------------------------------
+    // ADDRESS
+    // -------------------------------
     const addr = order.shippingAddress;
 
     doc.fontSize(14).font("Helvetica-Bold").text("Billing & Shipping Address");
-    doc.moveDown(0.5);
-
-    doc.font("Helvetica").fontSize(12);
+    doc.fontSize(12).font("Helvetica");
     doc.text(addr.fullName);
     doc.text(`${addr.city}, ${addr.state}`);
     doc.text(`PIN: ${addr.pincode}`);
@@ -226,97 +222,92 @@ export const generateInvoice = async (req, res) => {
 
     doc.moveDown(2);
 
-    // ------------ ITEMS TABLE ------------
+    // -------------------------------
+    // ITEMS TABLE
+    // -------------------------------
     doc.fontSize(14).font("Helvetica-Bold").text("Order Items");
-    doc.moveDown(0.7);
+    doc.moveDown(1);
 
-    const tableTop = doc.y;
+    const startY = doc.y;
 
-    // HEADER ROW
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(12)
-      .text("Item", 40, tableTop)
-      .text("Qty", 250, tableTop)
-      .text("Price", 320, tableTop)
-      .text("Total", 420, tableTop);
+    doc.fontSize(12).font("Helvetica-Bold");
+    doc.text("Item", 40, startY);
+    doc.text("Qty", 250, startY);
+    doc.text("Price", 320, startY);
+    doc.text("Total", 420, startY);
 
-    doc
-      .moveTo(40, tableTop + 15)
-      .lineTo(550, tableTop + 15)
-      .stroke("#999");
+    doc.moveTo(40, startY + 15).lineTo(550, startY + 15).stroke("#999");
 
-    // ROWS
-    let y = tableTop + 25;
+    let y = startY + 25;
+    let grandTotal = 0;
+
     doc.font("Helvetica").fontSize(12);
 
     order.items.forEach((item) => {
-      const total = item.quantity * item.product.price;
+      const product = item.product;
 
-      doc.text(item.product.name, 40, y, { width: 200 });
-      doc.text(item.quantity, 250, y);
-      doc.text(`₹${item.product.price}`, 320, y);
-      doc.text(`₹${total}`, 420, y);
+      const name = product?.name || "Deleted Product";
+      const price = product?.price ?? item.price ?? 0;
+      const qty = item?.quantity ?? 1;
+
+      const rowTotal = price * qty;
+      grandTotal += rowTotal;
+
+      doc.text(name, 40, y, { width: 180 });
+      doc.text(qty.toString(), 250, y);
+      doc.text(`₹${price}`, 320, y);
+      doc.text(`₹${rowTotal}`, 420, y);
 
       y += 22;
 
-      doc
-        .moveTo(40, y)
-        .lineTo(550, y)
-        .stroke("#eee");
-
-      y += 5;
+      // row separator
+      doc.moveTo(40, y).lineTo(550, y).stroke("#eee");
+      y += 8;
     });
 
-    doc.moveDown(3);
+    doc.moveDown(2);
 
-    // ------------ SUMMARY BOX ------------
-    const summaryY = y + 20;
+    // -------------------------------
+    // SUMMARY
+    // -------------------------------
+    doc.fontSize(14).font("Helvetica-Bold").text("Summary");
 
-    doc.rect(40, summaryY, 510, 120).stroke("#cccc");
+    doc.fontSize(12).font("Helvetica");
+    doc.text(`Subtotal: ₹${grandTotal}`);
+    doc.text(`Tax: ₹0`);
+    doc.text(`Shipping: ₹0`);
+    doc.text(`Payment Method: ${order.paymentInfo.status === "paid" ? "Online" : "COD"}`);
 
-    doc.font("Helvetica-Bold").fontSize(14).text("Summary", 50, summaryY + 10);
+    doc.moveDown(1);
 
-    const summary = [
-      ["Subtotal:", `₹${order.totalAmount}`],
-      ["Tax:", "₹0"],
-      ["Shipping:", "₹0"],
-      [
-        "Payment Method:",
-        order.paymentInfo.status === "paid" ? "Online" : "Cash on Delivery",
-      ],
-    ];
+    doc.font("Helvetica-Bold").fontSize(14);
+    doc.text(`Grand Total: ₹${grandTotal}`);
 
-    let sy = summaryY + 40;
-
-    doc.font("Helvetica").fontSize(12);
-
-    summary.forEach(([label, value]) => {
-      doc.text(label, 50, sy);
-      doc.text(value, 500, sy, { align: "right" });
-      sy += 20;
-    });
-
-    doc.font("Helvetica-Bold")
-      .fontSize(14)
-      .text("Grand Total:", 50, sy + 10)
-      .text(`₹${order.totalAmount}`, 500, sy + 10, { align: "right" });
-
-    // ------------ FOOTER ------------
+    // -------------------------------
+    // FOOTER
+    // -------------------------------
     doc.fontSize(10).fillColor("#777");
     doc.text(
-      "Thank you for choosing RAADI. For support, email support@raadi.com",
+      "Thank you for shopping with RAADI.",
       40,
       780,
       { align: "center" }
     );
 
+    // END PDF STREAM
     doc.end();
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "Could not generate invoice" });
+
+  } catch (error) {
+    console.error("Invoice Error:", error);
+
+    if (!res.headersSent) {
+      return res
+        .status(500)
+        .json({ message: "Could not generate invoice", error });
+    }
   }
 };
+
 
 
 // ===========================

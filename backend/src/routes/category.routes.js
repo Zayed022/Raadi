@@ -24,7 +24,7 @@ router.post(
 router.get("/", getAllCategories);
 router.get("/:slug", getCategoryBySlug);
 
-router.put("/:id", verifyJWT,  updateCategory);
-router.delete("/:id", verifyJWT,  deleteCategory);
+router.put("/:id",  updateCategory);
+router.delete("/:id",  deleteCategory);
 
 export default router;

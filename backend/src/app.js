@@ -9,7 +9,8 @@ app.use(cors({
         "http://localhost:5173",
         "https://raadi.vercel.app",
         "http://localhost:5174",
-        "https://raadi-admin.vercel.app"
+        "https://raadi-admin.vercel.app",
+        "https://www.raadii.in"
     ],
     credentials: true,
 }))

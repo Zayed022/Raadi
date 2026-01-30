@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://raadii.in/</loc>
+    <priority>1.0</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/shop</loc>
+    <priority>0.9</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/category/perfumes</loc>
+    <priority>0.9</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/category/soaps</loc>
+    <priority>0.9</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/about</loc>
+    <priority>0.6</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/contact</loc>
+    <priority>0.6</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/privacy-policy</loc>
+    <priority>0.2</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+  <url>
+    <loc>https://raadii.in/terms</loc>
+    <priority>0.2</priority>
+    <lastmod>2026-01-30</lastmod>
+  </url>
+
+</urlset>

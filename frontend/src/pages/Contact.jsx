@@ -11,12 +11,12 @@ function Contact() {
   return (
     <>
       <SEO
-        title="Contact Raadi – Customer Support & Enquiries"
-        description="Get in touch with Raadi for product enquiries, support or bulk orders for perfumes, soaps and aroma diffusers."
+        title="Contact Raadii – Customer Support & Enquiries"
+        description="Get in touch with Raadii for product enquiries, support or bulk orders for perfumes, soaps and aroma diffusers."
         url="https://raadii.in/contact"
       />
 
-      <h1 className="sr-only">Contact Raadi</h1>
+      <h1 className="sr-only">Contact Raadii</h1>
 
       <ContactForm />
       <ContactDetails />

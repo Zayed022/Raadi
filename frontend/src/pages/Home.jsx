@@ -11,7 +11,7 @@ export default function Home() {
     <>
       {/* H1 for SEO (can be visually hidden if needed) */}
       <h1 style={{ position: "absolute", left: "-9999px" }}>
-        Raadi – Luxury Perfumes, Soaps & Home Fragrances
+        Raadii – Luxury Perfumes, Soaps & Home Fragrances
       </h1>
 
       <main>
@@ -46,4 +46,3 @@ export default function Home() {
 }
 
 
-// SEO Optimized

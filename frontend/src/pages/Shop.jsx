@@ -9,8 +9,8 @@ function Shop() {
   return (
     <>
       <SEO
-        title="Shop Luxury Perfumes, Soaps & Diffusers | Raadi"
-        description="Shop premium perfumes, handcrafted soaps and aroma diffusers by Raadi. Designed for long-lasting fragrance."
+        title="Shop Luxury Perfumes, Soaps & Diffusers | Raadii"
+        description="Shop premium perfumes, handcrafted soaps and aroma diffusers by Raadii. Designed for long-lasting fragrance."
         url="https://raadii.in/shop"
       />
 

@@ -17,13 +17,13 @@ function About() {
   return (
     <>
       <SEO
-        title="About Raadi – Luxury Perfumes & Home Fragrances"
-        description="Learn about Raadi’s journey in crafting luxury perfumes, soaps, aroma diffusers and premium home fragrances."
+        title="About Raadii – Luxury Perfumes & Home Fragrances"
+        description="Learn about Raadii’s journey in crafting luxury perfumes, soaps, aroma diffusers and premium home fragrances."
         url="https://raadii.in/about"
       />
 
       <h1 className="sr-only">
-        About Raadi – Luxury Perfumes & Home Fragrances
+        About Raadii – Luxury Perfumes & Home Fragrances
       </h1>
 
       <AboutBanner />

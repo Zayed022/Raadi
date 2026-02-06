@@ -48,7 +48,7 @@ export default function ContactDetails() {
 
           <p className="text-orange-500 text-lg font-medium underline cursor-pointer hover:text-orange-600 transition">
             <FiMail className="inline-block mr-2" />
-            raadi10008@gmail.com
+            enquiry@raadii.in
           </p>
         </div>
 

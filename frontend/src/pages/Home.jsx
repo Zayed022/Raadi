@@ -12,6 +12,7 @@ export default function Home() {
       {/* H1 for SEO (can be visually hidden if needed) */}
       <h1 style={{ position: "absolute", left: "-9999px" }}>
         Raadii – Luxury Perfumes, Soaps & Home Fragrances
+        <img src="Raadi.png" alt="" />
       </h1>
 
       <main>

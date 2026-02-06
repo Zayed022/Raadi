@@ -63,7 +63,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-gray-700 mt-8 py-4 text-center text-sm text-gray-400">
-        © {year} RAADI. All rights reserved. | Designed & Developed by <span className="text-orange-500">Raadi & Team</span>
+        © {year} RAADII. All rights reserved. | Designed & Developed by <span className="text-orange-500">Raadii & Team</span>
       </div>
     </footer>
   );

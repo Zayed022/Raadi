@@ -22,7 +22,7 @@ export default function ContactForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8000/api/v1/contact", form);
+      await axios.post("https://raadi.onrender.com/api/v1/contact", form);
       alert("Message sent successfully!");
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {

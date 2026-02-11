@@ -10,7 +10,7 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import Raadi from "../../public/Raadi.png";
+import Logo from "../../public/Logo.jpeg"
 
 export default function Navbar() {
   const location = useLocation();
@@ -119,7 +119,7 @@ export default function Navbar() {
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2 select-none">
             <img
-              src={Raadi}
+              src={Logo}
               alt="RAADI Logo"
               className="h-10 w-auto object-contain"
             />
@@ -191,7 +191,7 @@ export default function Navbar() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b">
-          <img src={Raadi} alt="RAADI" className="h-10" />
+          <img src={Logo} alt="RAADI" className="h-10" />
 
           <button
             className="text-3xl text-gray-700"

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from "react-icons/fa";
-import Raadi from "../../public/Raadi.png"
+import Logo2 from "../../public/Logo2.png"
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -12,7 +12,7 @@ export default function Footer() {
         {/* Brand / About */}
         <div>
             <img 
-          src={Raadi}
+          src={Logo2}
           alt="RAADI Logo" 
           className="w-32 object-contain mb-4"
         />

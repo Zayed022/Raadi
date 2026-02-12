@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Raadi from "../../public/Raadi.png"
+import Logo from "../../public/Logo.jpeg"
 
 export default function WhatWeOffer() {
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function WhatWeOffer() {
           {/* Center Logo */}
           <div className="flex justify-center items-center" data-aos="zoom-in">
             <img
-              src={Raadi}
+              src={Logo}
               alt="RAADI"
               className="
                 w-40 sm:w-52 md:w-72 lg:w-80 

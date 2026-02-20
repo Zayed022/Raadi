@@ -23,10 +23,10 @@ const CATEGORY_SEO = {
 };
 
 export default function CategoryProducts() {
-  const { categoryName } = useParams();
+  const { category } = useParams();
   const navigate = useNavigate();
 
-  const seo = CATEGORY_SEO[categoryName] || {
+  const seo = CATEGORY_SEO[category] || {
     title: "Shop Products | Raadi",
     description:
       "Explore premium products by Raadi including perfumes, soaps and home fragrances.",
@@ -39,17 +39,25 @@ export default function CategoryProducts() {
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
+    if (!category) return;
+  
     fetchProducts();
     fetchWishlist();
-  }, [categoryName]);
-
+  }, [category]);
+  
   const fetchProducts = async () => {
     try {
       setLoading(true);
+  
       const res = await axios.get(
-        `https://raadi.onrender.com/api/v1/products/category/${categoryName}`
+        `https://raadi.onrender.com/api/v1/products/category/${encodeURIComponent(category)}`
       );
-      setProducts(res.data.products || []);
+  
+      setProducts(
+        (res.data.products || []).sort((a, b) =>
+          a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+        )
+      );
     } catch (err) {
       console.log("Category products fetch error:", err);
     } finally {
@@ -107,13 +115,13 @@ export default function CategoryProducts() {
       <SEO
         title={seo.title}
         description={seo.description}
-        url={`https://raadii.in/category/${categoryName}`}
+        url={`https://raadii.in/category/${category}`}
       />
 
       <section className="max-w-7xl mx-auto px-6 py-14">
         {/* H1 (Ranking Critical) */}
         <h1 className="text-4xl font-bold text-gray-900 text-center mb-6 capitalize">
-          {categoryName} by Raadi
+          {category} by Raadi
         </h1>
 
         {/* Category Intro Content (SEO GOLD) */}

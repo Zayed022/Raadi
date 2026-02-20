@@ -6,10 +6,20 @@ import React from "react";
 
 const API_BASE = "https://raadi.onrender.com/api/v1/promoCard/";
 
+const positionColors = {
+  1: "#A8A8A8",
+  2: "#CFE0EA",
+  3: "#F2C7BC",
+  4: "#F4D6A8",
+  5: "#F3C6BC",
+};
+
 export default function PromoGrid() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  
 
   // 🔥 API with short-term caching to avoid repeat calls
   const fetchData = useCallback(async () => {
@@ -117,7 +127,7 @@ const PromoHero = React.memo(function ({ card, onClick }) {
         cursor-pointer relative overflow-hidden
         will-change-transform
       "
-      style={{ backgroundColor: card.bgColor || "#ECECEC" }}
+      style={{ backgroundColor: positionColors[1] }}
     >
       <div className="space-y-3">
         <h3 className="text-2xl md:text-3xl font-extrabold">{card.title}</h3>
@@ -151,7 +161,7 @@ const PromoSmall = React.memo(function ({ card, onClick }) {
         shadow hover:shadow-md cursor-pointer transition-all
         will-change-transform
       "
-      style={{ backgroundColor: card.bgColor || "#fafafa" }}
+      style={{ backgroundColor: positionColors[card.position] }}
     >
       <div className="space-y-2 w-[55%]">
         <h4 className="text-lg md:text-xl font-bold">{card.title}</h4>

@@ -5,7 +5,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  getProductByCategory,
+  getProductsByCategory,
   getRecommendedProducts,
   getTopProducts,
   getFeatureProducts,
@@ -21,7 +21,7 @@ router.get("/", getAllProducts);
 router.get("/top-products", getTopProducts);
 router.get("/feature-products", getFeatureProducts);
 router.get("/best-seller", getBestSeller);
-router.get("/category/:categoryName", getProductByCategory);
+router.get("/category/:category", getProductsByCategory);
 router.get("/:id", getProductById);
 
 // admin routes

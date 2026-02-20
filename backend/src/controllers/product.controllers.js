@@ -232,24 +232,23 @@ export const deleteProduct = async (req, res) => {
 // ===========================
 // Get Products by Category
 // ===========================
+/*
 export const getProductByCategory = async (req, res) => {
   try {
-    const { categoryName } = req.params;
+    const { slug } = req.params;
 
-    // Find the category by name (case-insensitive)
-    const category = await Category.findOne({
-      name: { $regex: new RegExp("^" + categoryName + "$", "i") }
-    });
+    const category = await Category.findOne({ slug });
 
     if (!category) {
       return res.status(404).json({
         success: false,
-        message: "Category not found"
+        message: "Category not found",
       });
     }
 
-    // Fetch products belonging to the found category
-    const products = await Product.find({ category: category._id }).sort({ createdAt: -1 });
+    const products = await Product.find({
+      category: category._id,
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -257,14 +256,49 @@ export const getProductByCategory = async (req, res) => {
       count: products.length,
       products,
     });
-
   } catch (error) {
     console.error("Get Products by Category Error:", error);
     return res.status(500).json({
       success: false,
       message: "Server Error",
-      error
     });
+  }
+};
+*/
+
+export const getProductsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    if (!category) {
+      return res.status(400).json({ message: "Category is required" });
+    }
+
+    // If your Product.category stores ObjectId
+    const categoryDoc = await Category.findOne({
+      name: { $regex: new RegExp(`^${category}$`, "i") }
+    });
+
+    if (!categoryDoc) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const products = await Product.find({
+      category: categoryDoc._id
+    })
+    .sort({ name: 1 })
+    .collation({ locale: "en", strength: 2 }); // 🔥 Alphabetical A → Z
+
+    return res.status(200).json({
+      success: true,
+      category: categoryDoc.name,
+      count: products.length,
+      products
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

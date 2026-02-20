@@ -26,8 +26,11 @@ export default function CategorySection() {
   }, []);
 
   const goToCategory = useCallback(
-    (slug) => slug && navigate(`/category/${slug}`),
-    []
+    (categoryName) => {
+      if (!categoryName) return;
+      navigate(`/category/${encodeURIComponent(categoryName)}`);
+    },
+    [navigate]
   );
 
   // -------------------------------

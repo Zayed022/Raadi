@@ -82,12 +82,12 @@ const CategoryCard = React.memo(({ cat, onClick }) => {
       onClick={() => onClick(cat.slug)}
       className="cursor-pointer text-center transform transition duration-300 hover:scale-110"
     >
-      <div className="w-[140px] h-[140px] mx-auto bg-gray-100 rounded-xl shadow-md overflow-hidden flex items-center justify-center border">
+      <div className="w-[140px] h-[140px] mx-auto bg-white rounded-xl shadow-md overflow-hidden flex items-center justify-center border p-3">
         <img
           src={cat.image}
           alt={cat.name}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+          className="max-w-full max-h-full object-contain transition-transform duration-500 hover:scale-110"
         />
       </div>
 

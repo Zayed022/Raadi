@@ -5,27 +5,27 @@ import { FiUpload, FiTrash2, FiImage } from "react-icons/fi";
 export default function AdminAboutBanner() {
   const API = "https://raadi.onrender.com/api/v1/aboutBanner/";
 
-  const [banner, setBanner] = useState(null);
+  const [banners, setBanners] = useState([]);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch current banner
-  const fetchBanner = async () => {
+  // Fetch all banners
+  const fetchBanners = async () => {
     try {
       const res = await axios.get(API);
-      setBanner(res.data.banner);
+      setBanners(res.data.banners || []);
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    fetchBanner();
+    fetchBanners();
   }, []);
 
-  // Handle Image Selection + Preview
+  // Handle image selection
   const handleImageChange = (e) => {
     const img = e.target.files[0];
     setFile(img);
@@ -45,13 +45,13 @@ export default function AdminAboutBanner() {
 
     try {
       setLoading(true);
-      const res = await axios.post(API, formData);
+      await axios.post(API, formData);
 
       alert("Banner uploaded successfully!");
       setTitle("");
       setFile(null);
       setPreview("");
-      fetchBanner();
+      fetchBanners();
     } catch (err) {
       console.error(err);
       alert("Error uploading banner.");
@@ -60,16 +60,15 @@ export default function AdminAboutBanner() {
     }
   };
 
-  // Delete Banner
-  const deleteBanner = async () => {
-    if (!window.confirm("Delete current banner? This cannot be undone.")) return;
+  // Delete Banner by ID
+  const deleteBanner = async (id) => {
+    if (!window.confirm("Delete this banner? This cannot be undone.")) return;
 
     try {
       setLoading(true);
-      await axios.delete(`${API}delete`);
+      await axios.delete(`${API}${id}`);
       alert("Banner deleted successfully");
-      setBanner(null);
-      fetchBanner();
+      fetchBanners();
     } catch (err) {
       console.error(err);
       alert("Error deleting banner");
@@ -79,62 +78,50 @@ export default function AdminAboutBanner() {
   };
 
   return (
-    <section className="p-8 max-w-4xl mx-auto">
+    <section className="p-8 max-w-6xl mx-auto">
 
-      {/* Heading */}
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
-        Manage About Banner
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+        Manage About Banners
       </h1>
 
-      {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
         {/* Upload Card */}
         <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-200">
           <h2 className="text-xl font-bold mb-4">Upload New Banner</h2>
 
-          <label className="block font-medium text-gray-600 mb-1">
-            Banner Title (Optional)
-          </label>
           <input
             type="text"
             className="w-full p-2 border rounded-lg mb-4"
-            placeholder="Enter title..."
+            placeholder="Banner title (optional)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          <label className="block font-medium text-gray-600 mb-2">
-            Select Banner Image
-          </label>
-
           <div
-  className="border-2 border-dashed border-gray-400 rounded-xl p-5 
-             flex flex-col items-center justify-center text-gray-600 
-             hover:border-orange-500 transition cursor-pointer relative"
-  onClick={() => document.getElementById("bannerUpload").click()}
->
-  <FiUpload size={35} />
-  <p className="mt-2">Click to upload</p>
+            className="border-2 border-dashed border-gray-400 rounded-xl p-6 
+                       flex flex-col items-center justify-center text-gray-600 
+                       hover:border-orange-500 transition cursor-pointer"
+            onClick={() => document.getElementById("bannerUpload").click()}
+          >
+            <FiUpload size={35} />
+            <p className="mt-2">Click to upload</p>
 
-  <input
-    type="file"
-    id="bannerUpload"
-    accept="image/*"
-    className="hidden"
-    onChange={handleImageChange}
-  />
-</div>
-
+            <input
+              type="file"
+              id="bannerUpload"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
 
           {preview && (
-            <div className="mt-4">
-              <img
-                src={preview}
-                alt="Preview"
-                className="w-full h-64 object-cover rounded-xl shadow-md"
-              />
-            </div>
+            <img
+              src={preview}
+              alt="Preview"
+              className="mt-4 w-full h-64 object-cover rounded-xl shadow-md"
+            />
           )}
 
           <button
@@ -148,34 +135,39 @@ export default function AdminAboutBanner() {
           </button>
         </div>
 
-        {/* Current Banner */}
+        {/* Banner List */}
         <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-200">
-          <h2 className="text-xl font-bold mb-4">Current Banner</h2>
+          <h2 className="text-xl font-bold mb-6">All Banners</h2>
 
-          {!banner ? (
-            <div className="flex flex-col items-center justify-center text-gray-500">
+          {banners.length === 0 ? (
+            <div className="flex flex-col items-center text-gray-500">
               <FiImage size={50} />
-              <p className="mt-2">No Banner Uploaded Yet</p>
+              <p className="mt-2">No banners uploaded yet</p>
             </div>
           ) : (
-            <div>
-              <img
-                src={banner.bannerImage}
-                alt="Banner"
-                className="w-full h-64 object-cover rounded-xl shadow-md"
-              />
+            <div className="space-y-6">
+              {banners.map((banner) => (
+                <div key={banner._id} className="border rounded-xl p-4 shadow-sm">
+                  <img
+                    src={banner.bannerImage}
+                    alt={banner.title}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
 
-              <p className="mt-3 text-gray-700">
-                <strong>Title:</strong> {banner.title || "—"}
-              </p>
+                  <p className="mt-3 text-gray-700">
+                    <strong>Title:</strong> {banner.title || "—"}
+                  </p>
 
-              <button
-                onClick={deleteBanner}
-                disabled={loading}
-                className="mt-4 w-full py-3 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
-              >
-                Delete Banner
-              </button>
+                  <button
+                    onClick={() => deleteBanner(banner._id)}
+                    disabled={loading}
+                    className="mt-4 w-full py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2"
+                  >
+                    <FiTrash2 />
+                    Delete Banner
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

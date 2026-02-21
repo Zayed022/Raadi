@@ -155,7 +155,7 @@ export default function PrivacyPolicy() {
         <p className="mt-3 font-semibold">
           Email:{" "}
           <a href="mailto:raadi10008@gmail.com" className="text-orange-600">
-            raadi10008@gmail.com
+            enquiry@raadii.in
           </a>
         </p>
       </section>

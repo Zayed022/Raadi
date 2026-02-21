@@ -60,7 +60,7 @@ export default function RefundPolicy() {
         <li>
           Drop us an email at{" "}
           <a href="mailto:raadi10008@gmail.com" className="text-orange-600 font-semibold">
-            raadi10008@gmail.com
+            enquiry@raadii.in
           </a>{" "}
           or call{" "}
           <a href="tel:+918422996280" className="text-orange-600 font-semibold">

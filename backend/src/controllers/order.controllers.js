@@ -216,6 +216,7 @@ export const generateInvoice = async (req, res) => {
     doc.fontSize(14).font("Helvetica-Bold").text("Billing & Shipping Address");
     doc.fontSize(12).font("Helvetica");
     doc.text(addr.fullName);
+    doc.text(`${addr.landmark}`);
     doc.text(`${addr.city}, ${addr.state}`);
     doc.text(`PIN: ${addr.pincode}`);
     doc.text(`Phone: ${addr.phone}`);

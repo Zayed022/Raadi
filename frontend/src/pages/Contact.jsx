@@ -30,7 +30,7 @@ function Contact() {
             Shop
           </Link>{" "}
           or explore our{" "}
-          <Link to="/category/perfumes" className="text-blue-600 underline">
+          <Link to="/category/branded perfumes" className="text-blue-600 underline">
             Perfume Collection
           </Link>.
         </p>

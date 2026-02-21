@@ -1,11 +1,14 @@
 import { useState } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { FiUser, FiMail, FiPhone, FiEdit3 } from "react-icons/fi";
+import {
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiEdit3,
+  FiMapPin,
+  FiClock,
+} from "react-icons/fi";
 import { motion } from "framer-motion";
 import axios from "axios";
-
-AOS.init();
 
 export default function ContactForm() {
   const [form, setForm] = useState({
@@ -16,127 +19,201 @@ export default function ContactForm() {
     message: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("https://raadi.onrender.com/api/v1/contact", form);
-      alert("Message sent successfully!");
-      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+      setLoading(true);
+      await axios.post(
+        "https://raadi.onrender.com/api/v1/contact",
+        form
+      );
+      setSuccess(true);
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+      });
     } catch (error) {
-      alert("Failed to send message");
       console.log(error);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSuccess(false), 4000);
     }
   };
 
   return (
-    <section className="py-20 px-6 bg-[#fefdfc]">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Heading */}
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-[#e49b38] mb-10 text-center"
-          data-aos="fade-up"
+    <section className="relative py-24 px-6 bg-gradient-to-b from-[#fafafa] to-[#f5f7fb] overflow-hidden">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+
+        {/* LEFT CONTENT */}
+        <div>
+          <h2 className="text-5xl font-bold text-gray-900 leading-tight">
+            Let’s Start a Conversation
+          </h2>
+          <p className="text-gray-600 mt-6 text-lg">
+            Have questions about our products or need assistance?
+            Our team is here to help you.
+          </p>
+
+          <div className="mt-12 space-y-6">
+            <div className="flex items-start gap-4">
+              <FiMapPin className="text-orange-500 text-xl mt-1" />
+              <div>
+                <p className="font-semibold text-gray-900">Our Location</p>
+                <p className="text-gray-600 text-sm">
+                  Mumbai, Maharashtra, India
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <FiMail className="text-orange-500 text-xl mt-1" />
+              <div>
+                <p className="font-semibold text-gray-900">Email</p>
+                <p className="text-gray-600 text-sm">
+                  enquiry@raadii.in
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <FiClock className="text-orange-500 text-xl mt-1" />
+              <div>
+                <p className="font-semibold text-gray-900">Working Hours</p>
+                <p className="text-gray-600 text-sm">
+                  Mon – Sat, 9:00 AM – 7:00 PM
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT FORM */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-10 border border-gray-100"
         >
-          Get In Touch
-        </motion.h2>
+          <h3 className="text-2xl font-semibold text-gray-900 mb-8">
+            Send us a Message
+          </h3>
 
-        <form
-          onSubmit={handleSubmit}
-          data-aos="zoom-in"
-          className="bg-white shadow-xl rounded-3xl p-10 space-y-8"
-        >
+          <form onSubmit={handleSubmit} className="space-y-6">
 
-          {/* NAME + EMAIL */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-800 font-semibold">Name</label>
-              <div className="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-orange-400 transition">
-                <FiUser className="text-orange-400 text-lg" />
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="w-full outline-none"
-                  placeholder="Your Name"
-                  required
-                />
-              </div>
+            {/* Name + Email */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <InputField
+                icon={<FiUser />}
+                label="Name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+              <InputField
+                icon={<FiMail />}
+                label="Email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-800 font-semibold">Your Email</label>
-              <div className="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-orange-400 transition">
-                <FiMail className="text-orange-400 text-lg" />
-                <input
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  type="email"
-                  placeholder="Email"
-                  className="w-full outline-none"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* PHONE + SUBJECT */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-800 font-semibold">Your Phone</label>
-              <div className="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-orange-400 transition">
-                <FiPhone className="text-orange-400 text-lg" />
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="Phone"
-                  className="w-full outline-none"
-                />
-              </div>
+            {/* Phone + Subject */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <InputField
+                icon={<FiPhone />}
+                label="Phone"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
+              <InputField
+                icon={<FiEdit3 />}
+                label="Subject"
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+              />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-800 font-semibold">Your Subject</label>
-              <div className="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-orange-400 transition">
-                <FiEdit3 className="text-orange-400 text-lg" />
-                <input
-                  name="subject"
-                  value={form.subject}
-                  onChange={handleChange}
-                  placeholder="Subject"
-                  className="w-full outline-none"
-                />
-              </div>
+            {/* Message */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Message
+              </label>
+              <textarea
+                name="message"
+                value={form.message}
+                onChange={handleChange}
+                rows="5"
+                required
+                placeholder="Write your message..."
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition resize-none"
+              />
             </div>
-          </div>
 
-          {/* MESSAGE BOX */}
-          <div>
-            <label className="text-gray-800 font-semibold">Write Message</label>
-            <textarea
-              name="message"
-              value={form.message}
-              onChange={handleChange}
-              rows="6"
-              placeholder="Message"
-              required
-              className="w-full border rounded-xl px-4 py-4 shadow-sm focus:ring-2 focus:ring-orange-400 outline-none resize-none"
-            />
-          </div>
+            {/* Success Message */}
+            {success && (
+              <p className="text-green-600 text-sm font-medium">
+                Message sent successfully!
+              </p>
+            )}
 
-          {/* SUBMIT BUTTON */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-lg py-3 px-10 rounded-xl mx-auto block transition-all shadow-md"
-          >
-            Send Message
-          </motion.button>
-        </form>
+            {/* Submit */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-95 text-white font-semibold py-3 rounded-xl shadow-lg transition-all"
+            >
+              {loading ? "Sending..." : "Send Message"}
+            </motion.button>
+          </form>
+        </motion.div>
       </div>
     </section>
+  );
+}
+
+/* Reusable Input Component */
+function InputField({
+  icon,
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+      <div className="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-orange-400 transition">
+        <span className="text-orange-500">{icon}</span>
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          required={required}
+          placeholder={label}
+          className="w-full outline-none bg-transparent"
+        />
+      </div>
+    </div>
   );
 }

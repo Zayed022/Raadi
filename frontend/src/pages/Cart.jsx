@@ -26,97 +26,69 @@ export default function Cart() {
 
   const fetchPricingConfig = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/pricingConfig");
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/pricingConfig"
+      );
       setTax(res.data.taxAmount || 0);
       setShipping(res.data.shippingAmount || 0);
-    } catch (err) {
-      console.log("Pricing config fetch error:", err);
-    }
+    } catch {}
   };
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/cart",
+        { withCredentials: true }
+      );
 
       const cartData = res.data.cart || { items: [], totalPrice: 0 };
       setCart(cartData);
 
       const total =
-        cartData.totalPrice +
-        (res.data.tax ?? 0) +
-        (res.data.shipping ?? 0) -
-        discount;
+        cartData.totalPrice + tax + shipping - discount;
 
       setFinalTotal(total);
-      setLoading(false);
-    } catch (error) {
-      console.log("Fetch cart error", error);
-      setLoading(false);
-    }
+    } catch {}
+    setLoading(false);
   };
 
   const updateQuantity = async (productId, newQty) => {
-    try {
-      if (newQty <= 0) return removeItem(productId);
+    if (newQty <= 0) return removeItem(productId);
 
-      const res = await axios.put(
-        "https://raadi.onrender.com/api/v1/cart/update",
-        { productId, quantity: newQty },
-        { withCredentials: true }
-      );
+    const res = await axios.put(
+      "https://raadi.onrender.com/api/v1/cart/update",
+      { productId, quantity: newQty },
+      { withCredentials: true }
+    );
 
-      refreshTotalsAfterChange(res);
-    } catch (error) {
-      console.log("Update Quantity Error", error);
-    }
-  };
-
-  const removeItem = async (productId) => {
-    try {
-      const res = await axios.delete("https://raadi.onrender.com/api/v1/cart/remove", {
-        data: { productId },
-        withCredentials: true,
-      });
-
-      if (!res.data.cart?.items?.length) {
-        setCart({ items: [], totalPrice: 0 });
-        setFinalTotal(0);
-        return;
-      }
-
-      fetchCart();
-    } catch (err) {
-      console.log("Remove Error", err);
-    }
-  };
-
-  const refreshTotalsAfterChange = (res) => {
-    const updatedCart = res.data.cart || { items: [], totalPrice: 0 };
-
+    const updatedCart = res.data.cart;
     setCart(updatedCart);
 
     const total =
-      updatedCart.totalPrice +
-      (res.data.tax ?? tax) +
-      (res.data.shipping ?? shipping) -
-      discount;
+      updatedCart.totalPrice + tax + shipping - discount;
 
     setFinalTotal(total);
   };
 
-  // ------------------------
-  // APPLY PROMO CODE
-  // ------------------------
+  const removeItem = async (productId) => {
+    await axios.delete(
+      "https://raadi.onrender.com/api/v1/cart/remove",
+      {
+        data: { productId },
+        withCredentials: true,
+      }
+    );
+
+    fetchCart();
+  };
+
   const applyPromo = async () => {
     if (!promoCode.trim()) {
-      setCouponMessage({ type: "error", text: "Enter a valid promo code" });
+      setCouponMessage({ type: "error", text: "Enter valid promo code" });
       return;
     }
 
     setCouponApplying(true);
-    setCouponMessage(null);
 
     try {
       const res = await axios.post(
@@ -125,206 +97,217 @@ export default function Cart() {
         { withCredentials: true }
       );
 
-      if (res.data.success) {
-        const discountValue = res.data.discount;
+      const discountValue = res.data.discount;
+      setDiscount(discountValue);
 
-        setDiscount(discountValue);
+      const newTotal =
+        cart.totalPrice + tax + shipping - discountValue;
 
-        const newTotal =
-          cart.totalPrice + tax + shipping - discountValue;
-
-        setFinalTotal(newTotal);
-
-        setCouponMessage({
-          type: "success",
-          text: `Coupon Applied Successfully! You saved ₹${discountValue}`,
-        });
-      }
-    } catch (err) {
-      let msg = "Unable to apply promo code";
-
-      if (err.response?.data?.message) msg = err.response.data.message;
+      setFinalTotal(newTotal);
 
       setCouponMessage({
-        type: "error",
-        text: msg,
+        type: "success",
+        text: `Saved ₹${discountValue} successfully!`,
       });
-
+    } catch (err) {
+      setCouponMessage({
+        type: "error",
+        text: err.response?.data?.message || "Invalid promo code",
+      });
       setDiscount(0);
-    } finally {
-      setCouponApplying(false);
     }
+
+    setCouponApplying(false);
   };
 
-  const removePromo = () => {
-    setPromoCode("");
-    setDiscount(0);
-    setCouponMessage(null);
-
-    if (!cart) return;
-
-    const total = cart.totalPrice + tax + shipping;
-    setFinalTotal(total);
-  };
-
-  if (loading) return <div className="text-center mt-10 text-xl">Loading Cart...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg">
+        Loading your cart...
+      </div>
+    );
 
   return (
     <>
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#0b1b3f] mb-8">
-          Shopping Cart
-        </h1>
+      <div className="bg-gray-50 min-h-screen py-14">
+        <div className="max-w-7xl mx-auto px-6">
+          <h1 className="text-4xl font-bold text-gray-900 mb-10">
+            Shopping Cart
+          </h1>
 
-        {!cart || !cart.items?.length ? (
-          <p className="text-center text-gray-600 text-xl mt-20">Your cart is empty.</p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* LEFT — ITEMS */}
-            <div className="lg:col-span-2 space-y-5">
-              {cart.items.map((item) => (
-                <div
-                  key={item.product._id}
-                  className="flex gap-4 bg-white rounded-xl shadow p-4 hover:shadow-lg transition"
-                >
-                  <img
-                    src={item.product.images?.[0]}
-                    alt={item.product.name}
-                    className="w-28 h-28 object-contain bg-gray-100 rounded-lg"
-                  />
-
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <h2 className="text-xl font-semibold text-[#0b1b3f] line-clamp-1">
-                        {item.product.name}
-                      </h2>
-
-                      <p className="text-gray-600 text-sm">
-                        ₹{item.product.price} each
-                      </p>
-
-                      <p className="text-lg font-bold mt-1 text-orange-600">
-                        ₹{item.price.toLocaleString()}
-                      </p>
-                    </div>
-
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-3 mt-2">
-                      <button
-                        onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
-                        className="px-3 py-1 bg-gray-200 rounded-lg font-bold hover:bg-gray-300"
-                      >
-                        –
-                      </button>
-
-                      <span className="text-lg font-semibold">{item.quantity}</span>
-
-                      <button
-                        onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                        className="px-3 py-1 bg-gray-200 rounded-lg font-bold hover:bg-gray-300"
-                      >
-                        +
-                      </button>
-
-                      <button
-                        onClick={() => removeItem(item.product._id)}
-                        className="ml-auto text-red-500 hover:text-red-700 text-xl"
-                      >
-                        <FiTrash2 />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* RIGHT — SUMMARY */}
-            <div className="bg-white shadow-lg rounded-xl p-6 sticky top-24">
-              <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-
-              <div className="flex justify-between text-lg">
-                <span>Subtotal:</span>
-                <span>₹{cart.totalPrice.toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between text-lg text-gray-500 mt-1">
-                <span>Tax:</span>
-                <span>₹{tax.toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between text-lg text-gray-500 mt-1">
-                <span>Shipping:</span>
-                <span>₹{shipping.toLocaleString()}</span>
-              </div>
-
-              {discount > 0 && (
-                <div className="flex justify-between text-lg text-green-600 mt-2">
-                  <span>Discount:</span>
-                  <span>- ₹{discount}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-2xl font-bold mt-4 border-t pt-3">
-                <span>Total:</span>
-                <span className="text-orange-600">
-                  ₹{finalTotal?.toLocaleString()}
-                </span>
-              </div>
-
-              {/* PROMO CODE FIELD */}
-              <div className="mt-6">
-                <h3 className="font-semibold text-lg mb-2">Apply Promo Code</h3>
-
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Enter promo code"
-                    className="flex-1 border rounded-lg px-4 py-2"
-                  />
-
-                  <button
-                    onClick={applyPromo}
-                    disabled={couponApplying}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                  >
-                    {couponApplying ? "Applying..." : "Apply"}
-                  </button>
-                </div>
-
-                {couponMessage && (
-                  <p
-                    className={`mt-2 text-sm ${
-                      couponMessage.type === "success"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {couponMessage.text}
-                  </p>
-                )}
-
-                {discount > 0 && (
-                  <button
-                    onClick={removePromo}
-                    className="mt-2 text-red-500 underline text-sm hover:text-red-700"
-                  >
-                    Remove Promo
-                  </button>
-                )}
-              </div>
-
+          {!cart?.items?.length ? (
+            <div className="bg-white p-16 rounded-3xl shadow-sm text-center">
+              <p className="text-gray-500 text-lg">
+                Your cart is empty.
+              </p>
               <button
-                onClick={() => navigate("/checkout")}
-                className="w-full py-3 mt-6 bg-orange-500 text-white rounded-xl text-lg font-bold hover:bg-orange-600 transition"
+                onClick={() => navigate("/shop")}
+                className="mt-6 bg-orange-500 text-white px-6 py-3 rounded-xl hover:bg-orange-600 transition"
               >
-                Checkout
+                Continue Shopping
               </button>
             </div>
-          </div>
-        )}
-      </section>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-10">
+              {/* LEFT SIDE */}
+              <div className="lg:col-span-2 space-y-6">
+                {cart.items.map((item) => (
+                  <div
+                    key={item.product._id}
+                    className="bg-white rounded-2xl p-6 shadow-sm border hover:shadow-md transition"
+                  >
+                    <div className="flex gap-6">
+                      <img
+                        src={item.product.images?.[0]}
+                        alt={item.product.name}
+                        className="w-32 h-32 rounded-xl bg-gray-100 object-contain"
+                      />
+
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h2 className="font-semibold text-lg text-gray-900">
+                            {item.product.name}
+                          </h2>
+                          <p className="text-gray-500 text-sm mt-1">
+                            ₹{item.product.price} each
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-6">
+                          {/* Quantity */}
+                          <div className="flex items-center border rounded-xl overflow-hidden">
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.product._id,
+                                  item.quantity - 1
+                                )
+                              }
+                              className="px-4 py-2 bg-gray-100 hover:bg-gray-200"
+                            >
+                              –
+                            </button>
+                            <span className="px-6 font-medium">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.product._id,
+                                  item.quantity + 1
+                                )
+                              }
+                              className="px-4 py-2 bg-gray-100 hover:bg-gray-200"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-6">
+                            <span className="font-bold text-lg text-gray-900">
+                              ₹{item.price.toLocaleString()}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                removeItem(item.product._id)
+                              }
+                              className="text-gray-400 hover:text-red-500 transition"
+                            >
+                              <FiTrash2 size={20} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* RIGHT SIDE */}
+              <div className="bg-white rounded-3xl shadow-md p-8 h-fit sticky top-28">
+                <h2 className="text-2xl font-semibold mb-6">
+                  Order Summary
+                </h2>
+
+                <div className="space-y-3 text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹{cart.totalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span>₹{tax}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>₹{shipping}</span>
+                  </div>
+
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-₹{discount}</span>
+                    </div>
+                  )}
+
+                  <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
+                    <span>Total</span>
+                    <span className="text-orange-600">
+                      ₹{finalTotal?.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* PROMO */}
+                <div className="mt-8">
+                  <h3 className="font-medium mb-3">
+                    Promo Code
+                  </h3>
+
+                  <div className="flex gap-3">
+                    <input
+                      value={promoCode}
+                      onChange={(e) =>
+                        setPromoCode(e.target.value)
+                      }
+                      placeholder="Enter code"
+                      className="flex-1 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-400 outline-none"
+                    />
+
+                    <button
+                      onClick={applyPromo}
+                      disabled={couponApplying}
+                      className="bg-gray-900 text-white px-5 rounded-xl hover:bg-black transition"
+                    >
+                      {couponApplying ? "..." : "Apply"}
+                    </button>
+                  </div>
+
+                  {couponMessage && (
+                    <p
+                      className={`mt-2 text-sm ${
+                        couponMessage.type === "success"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {couponMessage.text}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => navigate("/checkout")}
+                  className="w-full mt-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-lg font-semibold transition"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <Footer />
     </>

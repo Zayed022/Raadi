@@ -70,74 +70,97 @@ export default function FeaturedProducts() {
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-center text-4xl font-bold text-[#0b1b3f]">
-        Featured
-      </h2>
-      <p className="text-center text-gray-600 mt-2 mb-12">
-        Shop our newest arrivals and crowd favorites.
-      </p>
+      <div className="text-center py-16 ">
+  <h2 className="text-[36px] md:text-[42px] font tracking-wide text-[#0b1b3f]">
+    Featured Products
+  </h2>
+
+  <p className="mt-4 text-[20px] md:text-[22px] font-medium text-[#1c2b4a]">
+    Shop our newest arrivals and crowd favorites.
+  </p>
+</div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
         {products.map((product) => (
           <div
-            key={product._id}
-            className="group cursor-pointer bg-white rounded-2xl shadow-md border border-gray-200
-            hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 p-5 relative w-full h-[420px]"
+          key={product._id}
+          className="group bg-white rounded-2xl shadow-sm border border-gray-200
+          hover:shadow-xl hover:-translate-y-1 transition-all duration-300
+          flex flex-col overflow-hidden"
+        >
+          {/* Image Section */}
+          <div
+            onClick={() => openProductDetails(product._id)}
+            className="relative bg-[#f3f2f7] h-72 flex items-center justify-center overflow-hidden"
           >
-            {/* Wishlist Button */}
+            {/* Wishlist */}
             <button
-              className="absolute top-4 right-4 z-50 transition-all duration-300"
-              onClick={() => handleWishlist(product._id)}
+              className="absolute top-4 right-4 z-20"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleWishlist(product._id);
+              }}
             >
               {wishlist.includes(product._id) ? (
-                <FaHeart size={30} className="text-orange-500" />
+                <FaHeart size={22} className="text-orange-500" />
               ) : (
                 <FiHeart
-                  size={30}
-                  className="text-gray-600 hover:text-orange-500 hover:fill-orange-500 transition-all"
+                  size={22}
+                  className="text-gray-500 hover:text-orange-500 transition"
                 />
               )}
             </button>
-
-            <div
+        
+            <img
+              src={product.images?.[0]}
+              alt={product.name}
+              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+        
+            {/* Hover Button */}
+            <button
+              className="absolute opacity-0 group-hover:opacity-100
+              transition duration-300 bg-orange-500 text-white
+              px-6 py-2 rounded-lg font-medium shadow-md"
               onClick={() => openProductDetails(product._id)}
-              className=" relative bg-[#f2f1f6] rounded-2xl p-6 h-72 flex items-center justify-center overflow-hidden"
             >
-              <img
-                src={product.images?.[0]}
-                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-                alt={product.name}
-              />
-
-              {/* Hover Overlay Button */}
-    <button
-      className="absolute inset-0 m-auto w-32 h-12 opacity-0 group-hover:opacity-100
-      transition-all duration-300 bg-orange-400 text-white font-semibold rounded-xl
-      flex items-center justify-center text-lg"
-      onClick={() => openProductDetails(product._id)}
-    >
-      Open
-    </button>
-            </div>
-
+              View
+            </button>
+          </div>
+        
+          {/* Content Section */}
+          <div className="flex flex-col flex-1 p-5">
+        
+            {/* Title */}
             <h3
               onClick={() => openProductDetails(product._id)}
-              className="text-[22px] mt-4 font-semibold text-[#0b1b3f] group-hover:text-orange-600 transition"
+              className="text-lg font-semibold text-[#0b1b3f] 
+              line-clamp-2 hover:text-orange-600 transition cursor-pointer"
             >
               {product.name}
             </h3>
-
-            <p className="text-gray-600 text-sm mt-1">
+        
+            {/* Description */}
+            <p className="text-gray-500 text-sm mt-1 line-clamp-2">
               {product.shortDescription}
             </p>
-
-            <div className="flex items-center mt-2 gap-3">
-              <p className="line-through text-gray-400">₹{product.mrp}</p>
-              <p className="font-bold text-lg text-[#0b1b3f]">
+        
+            {/* Spacer */}
+            <div className="flex-grow"></div>
+        
+            {/* Price */}
+            <div className="flex items-center gap-3 mt-4">
+              {product.mrp && (
+                <span className="text-gray-400 line-through text-sm">
+                  ₹{product.mrp}
+                </span>
+              )}
+              <span className="text-lg font-bold text-[#0b1b3f]">
                 ₹{product.price}
-              </p>
+              </span>
             </div>
           </div>
+        </div>
         ))}
       </div>
     </section>

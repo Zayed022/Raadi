@@ -26,7 +26,7 @@ export default function MissionSection() {
         Our Mission
       </h2>
 
-      <p className="text-center text-gray-600 text-lg mb-14 max-w-3xl mx-auto">
+      <p className="text-center text-gray-600 text-xl mb-14 max-w-3xl mx-auto">
         To provide high-quality accessories that enhance your experience,
         backed by exceptional customer service and technical support.
       </p>
@@ -47,12 +47,12 @@ export default function MissionSection() {
               >
                 {item.icon}
               </span>
-              <h3 className="text-xl font-semibold tracking-wide text-gray-900">
+              <h3 className="text-2xl font-semibold tracking-wide text-gray-900">
                 {item.title}
               </h3>
             </div>
 
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-xl text-gray-700 leading-relaxed">
               {item.description}
             </p>
           </div>

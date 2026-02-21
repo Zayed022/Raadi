@@ -10,7 +10,7 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import Logo from "../../public/Logo.jpeg"
+import Logo from "../../public/Logo.jpeg";
 
 export default function Navbar() {
   const location = useLocation();
@@ -20,7 +20,6 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Search UI State
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -32,21 +31,14 @@ export default function Navbar() {
   useEffect(() => {
     fetchWishlistCount();
     fetchCartCount();
-
-    const update = () => {
-      fetchWishlistCount();
-      fetchCartCount();
-    };
-
-    window.addEventListener("storage", update);
-    return () => window.removeEventListener("storage", update);
   }, []);
 
   const fetchWishlistCount = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/wishlist",
+        { withCredentials: true }
+      );
       setWishlistCount(res.data.wishlist?.products?.length || 0);
     } catch {
       setWishlistCount(0);
@@ -55,12 +47,12 @@ export default function Navbar() {
 
   const fetchCartCount = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/cart",
+        { withCredentials: true }
+      );
       const qty =
-        res.data.cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-
+        res.data.cart?.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
       setCartCount(qty);
     } catch {
       setCartCount(0);
@@ -89,11 +81,10 @@ export default function Navbar() {
       const res = await axios.get(
         `https://raadi.onrender.com/api/v1/products?search=${query}`
       );
-
       setSearchResults(res.data.products || []);
       setShowDropdown(true);
-    } catch (err) {
-      console.log("Search Error:", err);
+    } catch {
+      setSearchResults([]);
     } finally {
       setSearchLoading(false);
     }
@@ -107,73 +98,87 @@ export default function Navbar() {
     { name: "My Orders", path: "/my-orders" },
   ];
 
-  const isActive = (path) =>
-    location.pathname === path ? "text-orange-600 font-semibold" : "text-gray-800";
-
   return (
     <>
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-200">
+      <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
         <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
 
-          {/* LOGO */}
-          <Link to="/" className="flex items-center gap-2 select-none">
+          {/* Logo */}
+          <Link to="/" className="flex items-center select-none">
             <img
               src={Logo}
               alt="RAADI Logo"
-              className="h-10 w-auto object-contain"
+              className="h-11 w-auto object-contain transition hover:scale-105"
             />
           </Link>
 
-          {/* DESKTOP LINKS */}
-          <div className="hidden md:flex gap-10 text-lg font-medium items-center">
+          {/* Desktop Links */}
+          <div className="hidden md:flex gap-12 text-[17px] font-medium items-center">
             {links.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`relative hover:text-orange-600 transition ${isActive(
-                  link.path
-                )}`}
+                className={`relative group transition ${
+                  location.pathname === link.path
+                    ? "text-orange-600"
+                    : "text-gray-700 hover:text-orange-600"
+                }`}
               >
                 {link.name}
-                {location.pathname === link.path && (
-                  <span className="absolute left-0 -bottom-1 w-full h-[3px] bg-orange-600 rounded-md"></span>
-                )}
+                <span
+                  className={`absolute left-0 -bottom-1 h-[2px] bg-orange-600 transition-all duration-300 ${
+                    location.pathname === link.path
+                      ? "w-full"
+                      : "w-0 group-hover:w-full"
+                  }`}
+                />
               </Link>
             ))}
           </div>
 
-          {/* DESKTOP ICONS */}
-          <div className="hidden md:flex items-center gap-6 text-2xl text-gray-700">
-            <FiSearch
-              className="cursor-pointer hover:text-orange-600"
+          {/* Desktop Icons */}
+          <div className="hidden md:flex items-center gap-4">
+            <button
               onClick={() => setSearchOpen(true)}
-            />
+              className="p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <FiSearch className="text-xl text-gray-700 hover:text-orange-600" />
+            </button>
 
-            <Link to="/wishlist" className="relative">
-              <FiHeart className="hover:text-orange-600 cursor-pointer" />
+            <Link
+              to="/wishlist"
+              className="relative p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <FiHeart className="text-xl text-gray-700 hover:text-orange-600" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex justify-center items-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center font-medium shadow-sm">
                   {wishlistCount}
                 </span>
               )}
             </Link>
 
-            <Link to="/login">
-              <FiUser className="hover:text-orange-600 cursor-pointer" />
+            <Link
+              to="/login"
+              className="p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <FiUser className="text-xl text-gray-700 hover:text-orange-600" />
             </Link>
 
-            <Link to="/cart" className="relative">
-              <FiShoppingBag className="hover:text-orange-600 cursor-pointer" />
+            <Link
+              to="/cart"
+              className="relative p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <FiShoppingBag className="text-xl text-gray-700 hover:text-orange-600" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-orange-600 text-white text-[10px] w-4 h-4 rounded-full flex justify-center items-center">
+                <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center font-medium shadow-sm">
                   {cartCount}
                 </span>
               )}
             </Link>
           </div>
 
-          {/* MOBILE MENU BUTTON */}
+          {/* Mobile Menu Button */}
           <button
             className="text-3xl text-gray-800 md:hidden"
             onClick={() => setMobileMenuOpen(true)}
@@ -183,16 +188,14 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* FULLSCREEN MOBILE MENU */}
+      {/* Mobile Drawer */}
       <div
-        className={`fixed inset-0 bg-white z-50 transform transition-transform duration-300 ease-out md:hidden
-        ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
-      `}
+        className={`fixed inset-0 bg-white z-50 transform transition-transform duration-300 ease-out md:hidden shadow-2xl ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b">
           <img src={Logo} alt="RAADI" className="h-10" />
-
           <button
             className="text-3xl text-gray-700"
             onClick={() => setMobileMenuOpen(false)}
@@ -201,80 +204,21 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Search bar */}
-        <div className="px-5 py-4">
-          <div
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setSearchOpen(true);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 text-base"
-          >
-            <FiSearch className="text-lg" />
-            <span>Search products…</span>
-          </div>
-        </div>
-
-        {/* Navigation Links */}
-        <div className="px-5 mt-2 space-y-4 text-lg font-medium">
+        <div className="px-5 mt-6 space-y-6 text-lg font-medium">
           {links.map((link) => (
             <Link
               key={link.name}
               to={link.path}
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-3 border-b text-gray-800 ${isActive(link.path)}`}
+              className="block border-b pb-4 text-gray-800"
             >
               {link.name}
             </Link>
           ))}
         </div>
-
-        {/* Extra Actions */}
-        <div className="px-5 mt-8 space-y-6 text-xl text-gray-800">
-          <Link
-            to="/wishlist"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-between"
-          >
-            <span>Wishlist</span>
-            <div className="relative text-2xl">
-              <FiHeart />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex justify-center items-center">
-                  {wishlistCount}
-                </span>
-              )}
-            </div>
-          </Link>
-
-          <Link
-            to="/cart"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-between"
-          >
-            <span>Cart</span>
-            <div className="relative text-2xl">
-              <FiShoppingBag />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-orange-600 text-white text-xs w-5 h-5 rounded-full flex justify-center items-center">
-                  {cartCount}
-                </span>
-              )}
-            </div>
-          </Link>
-
-          <Link
-            to="/login"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-between"
-          >
-            <span>Login</span>
-            <FiUser className="text-2xl" />
-          </Link>
-        </div>
       </div>
 
-      {/* SEARCH MODAL — Works for Desktop + Mobile */}
+      {/* SEARCH MODAL */}
       {searchOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex justify-center px-4"
@@ -284,18 +228,18 @@ export default function Navbar() {
           }}
         >
           <div
-            className="w-full max-w-2xl mt-32 bg-white rounded-2xl p-6 shadow-xl"
+            className="w-full max-w-2xl mt-32 bg-white rounded-3xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-gray-100"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-4 border rounded-xl px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-4 border rounded-2xl px-5 py-4 bg-gray-50 focus-within:ring-2 focus-within:ring-orange-400 transition">
               <FiSearch className="text-xl text-gray-500" />
               <input
                 autoFocus
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search for perfumes, deodorants, gift packs..."
-                className="w-full outline-none text-lg"
+                placeholder="Search products..."
+                className="w-full outline-none text-lg bg-transparent"
               />
               <FiX
                 className="text-2xl cursor-pointer hover:text-red-500"
@@ -307,11 +251,15 @@ export default function Navbar() {
             </div>
 
             {showDropdown && (
-              <div className="mt-4 max-h-80 overflow-y-auto border rounded-xl shadow-md bg-white">
+              <div className="mt-6 max-h-80 overflow-y-auto rounded-2xl border shadow-md">
                 {searchLoading ? (
-                  <div className="p-4 text-center text-gray-500">Searching...</div>
+                  <div className="p-4 text-center text-gray-500">
+                    Searching...
+                  </div>
                 ) : searchResults.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">No results found</div>
+                  <div className="p-4 text-center text-gray-500">
+                    No results found
+                  </div>
                 ) : (
                   searchResults.map((p) => (
                     <div
@@ -320,16 +268,20 @@ export default function Navbar() {
                         setSearchOpen(false);
                         navigate(`/product/${p._id}`);
                       }}
-                      className="flex items-center gap-4 p-4 border-b cursor-pointer hover:bg-gray-100"
+                      className="flex items-center gap-4 p-4 border-b hover:bg-gray-50 cursor-pointer"
                     >
                       <img
                         src={p.images?.[0]}
-                        className="w-14 h-14 object-contain rounded-md"
+                        className="w-14 h-14 object-contain rounded-lg"
                         alt="product"
                       />
                       <div>
-                        <h4 className="font-semibold text-gray-800">{p.name}</h4>
-                        <p className="text-orange-600 font-bold">₹{p.price}</p>
+                        <h4 className="font-semibold text-gray-800">
+                          {p.name}
+                        </h4>
+                        <p className="text-orange-600 font-bold">
+                          ₹{p.price}
+                        </p>
                       </div>
                     </div>
                   ))

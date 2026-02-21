@@ -1,23 +1,24 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import { IoFilter, IoClose } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
-// 💡 Debounce helper to avoid multiple rapid API calls
-function debounce(func, delay) {
+// Stable debounce
+const debounce = (fn, delay) => {
   let timer;
   return (...args) => {
     clearTimeout(timer);
-    timer = setTimeout(() => func(...args), delay);
+    timer = setTimeout(() => fn(...args), delay);
   };
-}
+};
 
 export default function ShopProduct() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-
   const [wishlist, setWishlist] = useState([]);
   const [cart, setCart] = useState({});
 
@@ -29,26 +30,20 @@ export default function ShopProduct() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const navigate = useNavigate();
-
-  // --------------------------------------
-  //        API CALLS OPTIMIZED
-  // --------------------------------------
+  // ---------------- FETCH PRODUCTS ----------------
 
   const fetchProducts = useCallback(
     debounce(async (filters) => {
       try {
         const res = await axios.get(
           "https://raadi.onrender.com/api/v1/products/",
-          {
-            params: filters,
-          }
+          { params: filters }
         );
         setProducts(res.data.products);
       } catch (err) {
         console.log("Product Fetch Error", err);
       }
-    }, 300), // debounce to prevent repeated calls
+    }, 300),
     []
   );
 
@@ -63,44 +58,7 @@ export default function ShopProduct() {
     });
   }, [search, selectedCategory, ratingFilter, sort, priceRange]);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/category/"
-      );
-      setCategories(res.data.categories);
-    } catch (err) {
-      console.log("Category Fetch Error", err);
-    }
-  }, []);
-
-  const fetchWishlist = useCallback(async () => {
-    try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/wishlist", {
-        withCredentials: true,
-      });
-
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch (err) {
-      console.log("Wishlist Fetch Error:", err);
-    }
-  }, []);
-
-  const fetchCart = useCallback(async () => {
-    try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
-        withCredentials: true,
-      });
-
-      const mapped = {};
-      res.data.cart?.items?.forEach((item) => {
-        mapped[item.product._id] = item.quantity;
-      });
-      setCart(mapped);
-    } catch (err) {
-      console.log("Cart fetch error", err);
-    }
-  }, []);
+  // ---------------- INITIAL LOAD ----------------
 
   useEffect(() => {
     fetchCategories();
@@ -108,312 +66,321 @@ export default function ShopProduct() {
     fetchCart();
   }, []);
 
-  // --------------------------------------
-  //    MEMOIZED HANDLERS (smooth UI)
-  // --------------------------------------
+  const fetchCategories = async () => {
+    const res = await axios.get(
+      "https://raadi.onrender.com/api/v1/category/"
+    );
+    setCategories(res.data.categories);
+  };
 
-  const handleWishlist = useCallback(
-    async (productId) => {
-      try {
-        if (wishlist.includes(productId)) {
-          const res = await axios.delete(
-            "https://raadi.onrender.com/api/v1/wishlist/remove",
-            {
-              data: { productId },
-              withCredentials: true,
-            }
-          );
-
-          if (res.data.success) {
-            setWishlist((prev) => prev.filter((id) => id !== productId));
-          }
-        } else {
-          const res = await axios.post(
-            "https://raadi.onrender.com/api/v1/wishlist/add",
-            { productId },
-            { withCredentials: true }
-          );
-
-          if (res.data.success) {
-            setWishlist((prev) => [...prev, productId]);
-          }
-        }
-      } catch (err) {
-        console.log("Wishlist Error:", err);
-      }
-    },
-    [wishlist]
-  );
-
-  const addToCart = useCallback(async (productId) => {
+  const fetchWishlist = async () => {
     try {
-      const res = await axios.post(
-        "https://raadi.onrender.com/api/v1/cart/add",
-        { productId, quantity: 1 },
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/wishlist",
         { withCredentials: true }
       );
+      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
+    } catch {}
+  };
 
-      if (res.data.success) {
-        setCart((prev) => ({ ...prev, [productId]: 1 }));
-      }
-    } catch (err) {
-      console.log("Add to cart error:", err);
-    }
-  }, []);
-
-  const updateQuantity = useCallback(async (productId, newQty) => {
+  const fetchCart = async () => {
     try {
-      if (newQty <= 0) {
-        await axios.delete("https://raadi.onrender.com/api/v1/cart/remove", {
-          data: { productId },
-          withCredentials: true,
-        });
-
-        setCart((prev) => {
-          const updated = { ...prev };
-          delete updated[productId];
-          return updated;
-        });
-        return;
-      }
-
-      await axios.put(
-        "https://raadi.onrender.com/api/v1/cart/update",
-        { productId, quantity: newQty },
+      const res = await axios.get(
+        "https://raadi.onrender.com/api/v1/cart",
         { withCredentials: true }
       );
+      const mapped = {};
+      res.data.cart?.items?.forEach((item) => {
+        mapped[item.product._id] = item.quantity;
+      });
+      setCart(mapped);
+    } catch {}
+  };
 
-      setCart((prev) => ({ ...prev, [productId]: newQty }));
-    } catch (err) {
-      console.log("Update quantity error:", err);
+  // ---------------- ACTIONS ----------------
+
+  const handleWishlist = async (productId) => {
+    if (wishlist.includes(productId)) {
+      await axios.delete(
+        "https://raadi.onrender.com/api/v1/wishlist/remove",
+        { data: { productId }, withCredentials: true }
+      );
+      setWishlist((prev) => prev.filter((id) => id !== productId));
+    } else {
+      await axios.post(
+        "https://raadi.onrender.com/api/v1/wishlist/add",
+        { productId },
+        { withCredentials: true }
+      );
+      setWishlist((prev) => [...prev, productId]);
     }
-  }, []);
+  };
 
-  const openProductDetails = useCallback(
-    (id) => navigate(`/product/${id}`),
-    []
-  );
+  const addToCart = async (productId) => {
+    await axios.post(
+      "https://raadi.onrender.com/api/v1/cart/add",
+      { productId, quantity: 1 },
+      { withCredentials: true }
+    );
+    setCart((prev) => ({ ...prev, [productId]: 1 }));
+  };
 
-  // --------------------------------------
-  //         FILTER CONTENT MEMOIZED
-  // --------------------------------------
+  const updateQuantity = async (productId, newQty) => {
+    if (newQty <= 0) {
+      await axios.delete(
+        "https://raadi.onrender.com/api/v1/cart/remove",
+        { data: { productId }, withCredentials: true }
+      );
+      setCart((prev) => {
+        const updated = { ...prev };
+        delete updated[productId];
+        return updated;
+      });
+      return;
+    }
 
-  const FilterContent = useMemo(
-    () => (
-      <div className="p-5">
-        <h2 className="font-bold text-2xl mb-4">Filter</h2>
+    await axios.put(
+      "https://raadi.onrender.com/api/v1/cart/update",
+      { productId, quantity: newQty },
+      { withCredentials: true }
+    );
 
-        {/* CATEGORY */}
-        <h3 className="font-semibold text-xl mb-2">Categories</h3>
-        {categories.map((cat) => (
-          <label key={cat._id} className="flex items-center gap-2 mb-2 text-lg">
-            <input
-              type="checkbox"
-              checked={selectedCategory === cat.name}
-              onChange={() =>
-                setSelectedCategory(
-                  selectedCategory === cat.name ? null : cat.name
-                )
-              }
-            />
-            {cat.name}
-          </label>
-        ))}
+    setCart((prev) => ({ ...prev, [productId]: newQty }));
+  };
 
-        {/* PRICE */}
-        <h3 className="font-semibold text-xl mt-6 mb-2">Price Range</h3>
+  const resetFilters = () => {
+    setSelectedCategory(null);
+    setRatingFilter(null);
+    setSort("");
+    setPriceRange([0, 50000]);
+  };
+
+  const openProductDetails = (id) => navigate(`/product/${id}`);
+
+  // ---------------- FILTER CONTENT ----------------
+
+  const FilterContent = (
+    <div className="p-6">
+      <h2 className="font-semibold text-xl mb-6">Filters</h2>
+
+      {/* CATEGORY */}
+      <h3 className="font-medium mb-3">Categories</h3>
+
+      <label className="flex items-center gap-2 mb-2 text-sm">
         <input
-          type="range"
-          min="0"
-          max="50000"
-          value={priceRange[1]}
-          onChange={(e) => setPriceRange([0, +e.target.value])}
-          className="w-full"
+          type="radio"
+          name="category"
+          checked={!selectedCategory}
+          onChange={() => setSelectedCategory(null)}
         />
-        <p className="mt-1 text-lg text-gray-600">Upto ₹{priceRange[1]}</p>
+        All
+      </label>
 
-        {/* RATING */}
-        <h3 className="font-semibold text-xl mt-6 mb-2">Rating</h3>
-        {[5, 4, 3, 2].map((r) => (
-          <p
-            key={r}
-            onClick={() => setRatingFilter(ratingFilter === r ? null : r)}
-            className={`cursor-pointer mb-2 ${
-              ratingFilter === r ? "font-bold text-orange-500" : "text-gray-700"
+      {categories.map((cat) => (
+        <label key={cat._id} className="flex items-center gap-2 mb-2 text-sm">
+          <input
+            type="radio"
+            name="category"
+            checked={selectedCategory === cat.name}
+            onChange={() => setSelectedCategory(cat.name)}
+          />
+          {cat.name}
+        </label>
+      ))}
+
+      {/* PRICE */}
+      <h3 className="font-medium mt-6 mb-3">Price Range</h3>
+      <input
+        type="range"
+        min="0"
+        max="50000"
+        value={priceRange[1]}
+        onChange={(e) => setPriceRange([0, +e.target.value])}
+        className="w-full accent-orange-500"
+      />
+      <p className="text-sm text-gray-500 mt-1">
+        Up to ₹{priceRange[1]}
+      </p>
+
+      {/* RATING */}
+      <h3 className="font-medium mt-6 mb-3">Rating</h3>
+      <div className="space-y-2">
+        {[5, 4, 3, 2, 1].map((stars) => (
+          <button
+            key={stars}
+            onClick={() =>
+              setRatingFilter(ratingFilter === stars ? null : stars)
+            }
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${
+              ratingFilter === stars
+                ? "bg-orange-50 text-orange-600 font-semibold"
+                : "hover:bg-gray-50 text-gray-700"
             }`}
           >
-            ⭐ {r} & up
-          </p>
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`text-lg ${
+                    i < stars ? "text-yellow-400" : "text-gray-300"
+                  }`}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            <span>& up</span>
+          </button>
         ))}
-
-        <button
-          onClick={() => {
-            setSelectedCategory(null);
-            setRatingFilter(null);
-            setSearch("");
-            setSort("");
-            setPriceRange([0, 50000]);
-            setIsDrawerOpen(false);
-          }}
-          className="mt-6 w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
-        >
-          Show All Products
-        </button>
       </div>
-    ),
-    [categories, selectedCategory, ratingFilter, priceRange]
+
+      <button
+        onClick={resetFilters}
+        className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm transition"
+      >
+        Reset Filters
+      </button>
+    </div>
   );
 
-  // --------------------------------------
-  //                UI RENDER
-  // --------------------------------------
+  // ---------------- UI ----------------
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8">
+    <section className="max-w-7xl mx-auto px-4 py-10">
 
       {/* MOBILE FILTER BUTTON */}
       <button
-        className="lg:hidden flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg mb-4"
         onClick={() => setIsDrawerOpen(true)}
+        className="lg:hidden flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg mb-6"
       >
-        <IoFilter size={22} />
+        <IoFilter size={20} />
         Filters
       </button>
 
-      {/* OVERLAY */}
+      {/* MOBILE DRAWER */}
       {isDrawerOpen && (
-        <div
-          onClick={() => setIsDrawerOpen(false)}
-          className="fixed inset-0 bg-black bg-opacity-40 z-40 lg:hidden"
-        ></div>
-      )}
-
-      {/* DRAWER */}
-      <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 lg:hidden`}
-        style={{
-          transform: isDrawerOpen ? "translateX(0)" : "translateX(-100%)",
-          willChange: "transform",
-        }}
-      >
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-semibold">Filters</h2>
-          <IoClose
-            size={28}
-            className="cursor-pointer"
+        <>
+          <div
             onClick={() => setIsDrawerOpen(false)}
+            className="fixed inset-0 bg-black/40 z-40"
           />
-        </div>
-
-        {FilterContent}
-      </div>
+          <div className="fixed top-0 left-0 w-80 h-full bg-white shadow-xl z-50 overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="font-semibold text-lg">Filters</h2>
+              <IoClose
+                size={24}
+                className="cursor-pointer"
+                onClick={() => setIsDrawerOpen(false)}
+              />
+            </div>
+            {FilterContent}
+          </div>
+        </>
+      )}
 
       <div className="flex gap-10">
 
         {/* DESKTOP SIDEBAR */}
-        <aside className="hidden lg:block w-72 bg-white rounded-2xl p-5 shadow-md h-fit sticky top-24">
+        <aside className="hidden lg:block w-72 bg-white rounded-2xl shadow-sm border border-gray-100 sticky top-24 h-fit">
           {FilterContent}
         </aside>
 
         {/* PRODUCT GRID */}
         <div className="flex-1">
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-gray-700 text-xl">
-              Selected Products: <b>{products.length}</b>
-            </p>
+
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-lg font-semibold text-gray-800">
+              {products.length} Products Found
+            </h2>
 
             <select
-              className="px-4 py-2 border rounded-lg bg-white shadow-sm"
               onChange={(e) => setSort(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm shadow-sm"
             >
               <option value="">Sort By</option>
-              <option value="price_low">Price (Low → High)</option>
-              <option value="price_high">Price (High → Low)</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
               <option value="rating">Rating</option>
-              <option value="latest">Newest First</option>
+              <option value="latest">Newest</option>
             </select>
           </div>
 
-          {/* PRODUCTS */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-8">
+            {products.map((p) => (
+              <div
+                key={p._id}
+                onClick={() => openProductDetails(p._id)}
+                className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
+              >
+                <div className="relative bg-[#f5f6f8] h-64 flex items-center justify-center p-6">
+                  <img
+                    src={p.images[0]}
+                    alt={p.name}
+                    className="max-h-full object-contain group-hover:scale-105 transition"
+                  />
 
-           {products.map((p) => (
-  <div
-    key={p._id}
-    onClick={() => openProductDetails(p._id)}
-    className="bg-white rounded-xl shadow-md overflow-hidden p-3 hover:-translate-y-1 hover:shadow-lg transition cursor-pointer"
-  >
-    <div className="relative bg-[#f5f5f7] rounded-lg p-4 flex items-center justify-center h-40 sm:h-48">
-      <img
-        src={p.images[0]}
-        alt={p.name}
-        className="w-full h-full object-contain transition duration-300"
-        loading="lazy"
-      />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleWishlist(p._id);
+                    }}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-md"
+                  >
+                    {wishlist.includes(p._id) ? (
+                      <FaHeart size={18} className="text-orange-500" />
+                    ) : (
+                      <FiHeart size={18} className="text-gray-600" />
+                    )}
+                  </button>
+                </div>
 
-      <button
-        className="absolute top-3 right-3 z-50"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleWishlist(p._id);
-        }}
-      >
-        {wishlist.includes(p._id) ? (
-          <FaHeart size={20} className="text-orange-500" />
-        ) : (
-          <FiHeart size={20} className="text-gray-600 hover:text-orange-500" />
-        )}
-      </button>
-    </div>
+                <div className="flex flex-col flex-1 p-5">
+                  <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px]">
+                    {p.name}
+                  </h3>
 
-    <h3 className="mt-3 font-semibold text-base">{p.name}</h3>
-    <p className="text-gray-500 line-through text-xs">₹{p.mrp}</p>
-    <p className="text-lg font-bold">₹{p.price}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    {p.mrp && (
+                      <span className="text-xs text-gray-400 line-through">
+                        ₹{p.mrp}
+                      </span>
+                    )}
+                    <span className="text-lg font-semibold text-gray-900">
+                      ₹{p.price}
+                    </span>
+                  </div>
 
-    {/* 🟠 OUT OF STOCK CONDITION */}
-    {p.stock === 0 ? (
-      <button
-        className="w-full mt-3 bg-gray-300 text-gray-600 py-1.5 rounded-md cursor-not-allowed"
-        onClick={(e) => e.stopPropagation()}
-        disabled
-      >
-        Out of Stock
-      </button>
-    ) : cart[p._id] ? (
-      <div
-        className="mt-3 flex items-center justify-between bg-orange-500 text-white rounded-md py-1.5 px-3"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => updateQuantity(p._id, cart[p._id] - 1)}
-          className="text-lg font-bold"
-        >
-          –
-        </button>
-        <span className="text-base font-semibold">{cart[p._id]}</span>
-        <button
-          onClick={() => updateQuantity(p._id, cart[p._id] + 1)}
-          className="text-lg font-bold"
-        >
-          +
-        </button>
-      </div>
-    ) : (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          addToCart(p._id);
-        }}
-        className="w-full mt-3 bg-orange-500 text-white py-1.5 rounded-md hover:bg-orange-600"
-      >
-        Add to Cart
-      </button>
-    )}
-  </div>
-))}
-
-
+                  <div className="mt-auto pt-4">
+                    {p.stock === 0 ? (
+                      <button disabled className="w-full py-2 bg-gray-200 text-gray-600 rounded-lg text-sm">
+                        Out of Stock
+                      </button>
+                    ) : cart[p._id] ? (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center justify-between bg-orange-500 text-white rounded-lg px-4 py-2"
+                      >
+                        <button onClick={() => updateQuantity(p._id, cart[p._id] - 1)}>–</button>
+                        <span>{cart[p._id]}</span>
+                        <button onClick={() => updateQuantity(p._id, cart[p._id] + 1)}>+</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(p._id);
+                        }}
+                        className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition"
+                      >
+                        Add to Cart
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+
         </div>
       </div>
     </section>

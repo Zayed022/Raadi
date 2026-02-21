@@ -85,13 +85,11 @@ export const getAllProducts = async (req, res) => {
       sort,
       minPrice,
       maxPrice,
-      page = 1,
-      limit = 12
     } = req.query;
 
     let query = {};
 
-    // SEARCH FILTER
+    // SEARCH
     if (search) {
       query.name = { $regex: search, $options: "i" };
     }
@@ -103,12 +101,12 @@ export const getAllProducts = async (req, res) => {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
-    // RATING FILTER
+    // RATING
     if (rating) {
       query.ratings = { $gte: Number(rating) };
     }
 
-    // CATEGORY FILTER
+    // CATEGORY
     if (category) {
       const categoryObj = await Category.findOne({
         name: { $regex: new RegExp("^" + category + "$", "i") }
@@ -117,7 +115,7 @@ export const getAllProducts = async (req, res) => {
       if (categoryObj) query.category = categoryObj._id;
     }
 
-    // SORT OPTIONS
+    // SORT
     let sortOption = {};
     switch (sort) {
       case "price_low":
@@ -136,18 +134,12 @@ export const getAllProducts = async (req, res) => {
         sortOption.createdAt = -1;
     }
 
-    const products = await Product.find(query)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort(sortOption);
-
-    const total = await Product.countDocuments(query);
+    // Fetch ALL products (no pagination)
+    const products = await Product.find(query).sort(sortOption);
 
     return res.status(200).json({
       success: true,
-      total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
+      total: products.length,
       products,
     });
 

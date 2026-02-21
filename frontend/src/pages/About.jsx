@@ -12,6 +12,7 @@ import FeaturedProducts from "../components/FeaturedProducts";
 import Testimonials from "../components/Testimonals";
 import WhatWeOffer from "../components/WhatWeOffer";
 import Footer from "../components/Footer";
+import ContactDetails from "../components/ContactDetails";
 
 function About() {
   return (
@@ -35,13 +36,14 @@ function About() {
       <FeaturedProducts />
       <TopProducts />
       <MissionSection />
+      <ContactDetails/>
 
       {/* Internal linking block */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <h2 className="text-2xl font-bold mb-4">Explore Raadi Collections</h2>
         <ul className="list-disc ml-6 text-gray-700">
-          <li><Link to="/category/perfumes">Luxury Perfumes</Link></li>
-          <li><Link to="/category/soaps">Handcrafted Soaps</Link></li>
+          <li><Link to="/category/branded perfumes">Branded Perfumes</Link></li>
+          <li><Link to="/category/aerosal spray">Aerosal Sprays</Link></li>
           <li><Link to="/shop">Shop All Products</Link></li>
         </ul>
       </section>

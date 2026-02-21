@@ -22,9 +22,9 @@ export default function ContactDetails() {
             Address
           </h2>
 
-          <p className="text-gray-900 font-semibold text-lg mb-1">INDIA</p>
+          <p className="text-gray-900 font-semibold text-xl mb-1">INDIA</p>
 
-          <p className="text-gray-600 leading-relaxed text-base">
+          <p className="text-gray-600 leading-relaxed text-xl text-base">
             SIRAJ ENTERPRISES <br />
             1204 / The Ambience Court, Vashi 19 D, Groma Marg, <br />
             Navi Mumbai 400703, Maharashtra.
@@ -38,15 +38,15 @@ export default function ContactDetails() {
         >
           <h2 className="text-3xl font-extrabold text-[#071a3c] mb-6 flex items-center gap-3">
             <FiPhoneCall className="text-orange-500 text-4xl" />
-            Contact
+            Contact Us
           </h2>
 
-          <p className="text-gray-900 font-semibold text-lg flex items-center gap-2 mb-3">
+          <p className="text-gray-900 font-semibold text-xl flex items-center gap-2 mb-3">
             <FiPhoneCall className="text-orange-400" />
             +91 8422996280
           </p>
 
-          <p className="text-orange-500 text-lg font-medium underline cursor-pointer hover:text-orange-600 transition">
+          <p className="text-orange-500 text-xl font-medium underline cursor-pointer hover:text-orange-600 transition">
             <FiMail className="inline-block mr-2" />
             enquiry@raadii.in
           </p>

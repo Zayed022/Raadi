@@ -64,12 +64,17 @@ export default function TopProducts() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <h2 className="text-center text-4xl font-bold text-[#0b1b3f]">Top Products</h2>
-      <p className="text-center text-gray-600 mt-2 mb-10">
-        Shop our newest arrivals and crowd favorites.
-      </p>
+      <div className="text-center py-16 ">
+  <h2 className="text-[36px] md:text-[42px] font tracking-wide text-[#0b1b3f]">
+    Top Products
+  </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+  <p className="mt-4 text-[20px] md:text-[22px] font-medium text-[#1c2b4a]">
+  Shop our newest arrivals and crowd favorites.
+  </p>
+</div>
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {products.map((product) => (
           <div
             key={product._id}
@@ -127,7 +132,31 @@ export default function TopProducts() {
             </div>
           </div>
         ))}
+        
       </div>
+      <div className="flex justify-center mt-14">
+  <button
+    onClick={() => navigate("/shop")}
+    className="
+      bg-[#E6B174]
+      hover:bg-[#dca35e]
+      text-white
+      font-semibold
+      text-lg
+      px-16
+      py-4
+      rounded-xl
+      shadow-md
+      transition-all
+      duration-300
+      hover:shadow-lg
+      hover:-translate-y-0.5
+      active:translate-y-0
+    "
+  >
+    View All
+  </button>
+</div>
     </section>
   );
 }

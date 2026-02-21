@@ -21,13 +21,7 @@ function Shop() {
       <ShopProduct />
 
       {/* Internal category links */}
-      <section className="max-w-6xl mx-auto px-6 py-10">
-        <h2 className="text-xl font-semibold mb-3">Browse by Category</h2>
-        <ul className="flex gap-6 text-blue-600 underline">
-          <li><Link to="/category/perfumes">Perfumes</Link></li>
-          <li><Link to="/category/soaps">Soaps</Link></li>
-        </ul>
-      </section>
+      
 
       <Footer />
     </>

@@ -81,6 +81,7 @@ export default function CategorySection() {
 
 const CategoryCard = React.memo(({ cat, onClick }) => {
   return (
+    <>
     <div
       onClick={() => onClick(cat.slug)}
       className="cursor-pointer text-center transform transition duration-300 hover:scale-110"
@@ -98,5 +99,8 @@ const CategoryCard = React.memo(({ cat, onClick }) => {
         {cat.name}
       </p>
     </div>
+    
+</>
+    
   );
 });

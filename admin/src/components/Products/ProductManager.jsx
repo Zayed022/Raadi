@@ -7,255 +7,262 @@ const API = "https://raadi.onrender.com/api/v1";
 
 export default function ProductManager() {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
 
   const [editData, setEditData] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
 
-  // Fetch All Products
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  /* ================= FETCH ================= */
+
   const fetchProducts = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${API}/products`, {
-        params: { page, limit: 12, search, category: categoryFilter },
+        params: { page, limit: 10, search },
       });
 
       if (res.data.success) {
         setProducts(res.data.products);
         setPages(res.data.pages);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Fetch categories
-  const fetchCategories = async () => {
-    try {
-      const res = await axios.get(`${API}/category`);
-      setCategories(res.data.categories || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, [page, search, categoryFilter]);
+  }, [page, search]);
 
-  // Delete product
+  /* ================= DELETE ================= */
+
   const deleteProduct = async (id) => {
-    if (!window.confirm("Delete this product permanently?")) return;
+    if (!window.confirm("Delete product permanently?")) return;
 
     try {
-      const res = await axios.delete(`${API}/products/${id}`);
-      if (res.data.success) {
-        toast.success("Product deleted");
-        fetchProducts();
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete");
+      await axios.delete(`${API}/products/${id}`);
+      toast.success("Product deleted");
+      fetchProducts();
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
-  // Open Edit modal
-  const openEditModal = (product) => {
-    setEditData(product);
-    setEditModalOpen(true);
+  /* ================= TOGGLES ================= */
+
+  const toggleFlag = async (id, type) => {
+    if (actionLoading) return;
+
+    try {
+      setActionLoading(true);
+      await axios.patch(`${API}/products/${id}/${type}`);
+      toast.success("Updated successfully");
+      fetchProducts();
+    } catch {
+      toast.error("Action failed");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  // Handle Edit Submit
+  /* ================= UPDATE ================= */
+
   const updateProduct = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.put(`${API}/products/${editData._id}`, editData);
-      if (res.data.success) {
-        toast.success("Product updated");
-        setEditModalOpen(false);
-        fetchProducts();
+      setActionLoading(true);
+
+      await axios.put(`${API}/products/${editData._id}`, editData);
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        await axios.put(
+          `${API}/products/${editData._id}/update-image`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
       }
-    } catch (err) {
-      console.error(err);
+
+      toast.success("Product updated");
+      setEditModalOpen(false);
+      setImageFile(null);
+      fetchProducts();
+    } catch {
       toast.error("Update failed");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
+    <div className="p-8 bg-gray-100 min-h-screen">
 
-      {/* Header */}
-      <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
-
-      {/* Search + Filter */}
-      <div className="flex gap-4 mb-6 flex-wrap">
-
-        {/* Search */}
-        <div className="flex items-center bg-white border rounded-lg px-3 py-2 shadow-sm">
-          <FiSearch className="text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="outline-none"
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-
-        {/* Category Filter */}
-        <select
+      {/* SEARCH */}
+      <div className="mb-6 flex items-center bg-white px-4 py-3 rounded-lg shadow">
+        <FiSearch className="mr-3 text-gray-400" />
+        <input
+          placeholder="Search products..."
+          className="outline-none w-full"
           onChange={(e) => {
-            setCategoryFilter(e.target.value);
+            setSearch(e.target.value);
             setPage(1);
           }}
-          className="border px-4 py-2 rounded-lg shadow-sm bg-white"
-        >
-          <option value="">All Categories</option>
-          {categories.map((c) => (
-            <option key={c._id} value={c.name}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full bg-white shadow rounded-lg overflow-hidden">
-          <thead className="bg-gray-800 text-white">
-            <tr>
-              <th className="p-3 text-left">Image</th>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Description</th>
-              <th className="p-3 text-left">Price</th>
-              <th className="p-3 text-left">Stock</th>
-              <th className="p-3 text-left">Category</th>
-              <th className="p-3 text-left">Flags</th>
-              <th className="p-3 text-left">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {products.map((p) => (
-              <tr key={p._id} className="border-b hover:bg-gray-50">
-
-                {/* IMAGE */}
-                <td className="p-3">
-                  <img
-                    src={p.images?.[0]}
-                    className="h-16 w-16 object-cover rounded-lg border"
-                  />
-                </td>
-
-                {/* NAME */}
-                <td className="p-3 font-medium">{p.name}</td>
-                <td className="p-3 font-medium">{p.description}</td>
-
-                {/* PRICE */}
-                <td className="p-3">₹{p.price}</td>
-
-                {/* STOCK */}
-                <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      p.stock > 0
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {p.stock}
-                  </span>
-                </td>
-
-                {/* CATEGORY */}
-                <td className="p-3">{p.categoryName || p.category}</td>
-
-                {/* FLAGS */}
-                <td className="p-3 space-x-2 text-sm">
-                  {p.isTopProduct && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded">
-                      Top
-                    </span>
-                  )}
-                  {p.isFeatureProduct && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-600 rounded">
-                      Feature
-                    </span>
-                  )}
-                  {p.isBestSeller && (
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-600 rounded">
-                      Best
-                    </span>
-                  )}
-                </td>
-
-                {/* ACTIONS */}
-                <td className="p-3 flex gap-3">
-                  <button
-                    onClick={() => openEditModal(p)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <FiEdit size={20} />
-                  </button>
-
-                  <button
-                    onClick={() => deleteProduct(p._id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <FiTrash2 size={20} />
-                  </button>
-                </td>
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        {loading ? (
+          <div className="p-6 text-center">Loading...</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-800 text-white">
+              <tr>
+                <th className="p-4 text-left">Image</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Category</th>
+                <th>Flags</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
 
-        {/* PAGINATION */}
-        <div className="flex justify-center mt-6 gap-3">
-          {[...Array(pages).keys()].map((num) => (
-            <button
-              key={num}
-              onClick={() => setPage(num + 1)}
-              className={`px-4 py-2 rounded-lg border ${
-                page === num + 1
-                  ? "bg-orange-600 text-white"
-                  : "bg-white hover:bg-gray-100"
-              }`}
-            >
-              {num + 1}
-            </button>
-          ))}
-        </div>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p._id} className="border-b">
+                  <td className="p-4">
+                    <img
+                      src={p.images?.[0]}
+                      alt={p.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+
+                  <td>{p.name}</td>
+                  <td>{p.description}</td>
+                  <td>₹{p.price}</td>
+                  <td>{p.stock}</td>
+                  <td>{p.category?.name || p.category}</td>
+
+                  {/* FLAGS COLUMN */}
+                  <td className="space-y-1">
+                    <div>
+                      <button
+                        onClick={() =>
+                          toggleFlag(p._id, "toggle-top")
+                        }
+                        className={`px-2 py-1 rounded text-xs ${
+                          p.isTopProduct
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        Top
+                      </button>
+                    </div>
+
+                    <div>
+                      <button
+                        onClick={() =>
+                          toggleFlag(p._id, "toggle-featured")
+                        }
+                        className={`px-2 py-1 rounded text-xs ${
+                          p.isFeatureProduct
+                            ? "bg-purple-500 text-white"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        Featured
+                      </button>
+                    </div>
+
+                    <div>
+                      <button
+                        onClick={() =>
+                          toggleFlag(p._id, "toggle-bestseller")
+                        }
+                        className={`px-2 py-1 rounded text-xs ${
+                          p.isBestSeller
+                            ? "bg-yellow-500 text-white"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        Best Seller
+                      </button>
+                    </div>
+                  </td>
+
+                  {/* ACTIONS */}
+                  <td className="space-x-2">
+                    <button
+                      onClick={() => {
+                        setEditData(p);
+                        setEditModalOpen(true);
+                      }}
+                      className="text-blue-600"
+                    >
+                      <FiEdit size={18} />
+                    </button>
+
+                    <button
+                      onClick={() => deleteProduct(p._id)}
+                      className="text-red-600"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* PAGINATION */}
+      <div className="mt-6 flex justify-center gap-2">
+        {[...Array(pages).keys()].map((n) => (
+          <button
+            key={n}
+            onClick={() => setPage(n + 1)}
+            className={`px-3 py-1 rounded ${
+              page === n + 1
+                ? "bg-orange-500 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            {n + 1}
+          </button>
+        ))}
       </div>
 
       {/* EDIT MODAL */}
-      {editModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[450px] rounded-xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+      {editModalOpen && editData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-[500px]">
+            <h2 className="text-lg font-bold mb-4">
+              Edit Product
+            </h2>
 
-            <form onSubmit={updateProduct} className="space-y-4">
-
+            <form onSubmit={updateProduct} className="space-y-3">
               <input
-                type="text"
                 value={editData.name}
                 onChange={(e) =>
                   setEditData({ ...editData, name: e.target.value })
                 }
-                className="border p-2 rounded w-full"
+                className="w-full border p-2 rounded"
               />
 
               <input
@@ -264,8 +271,7 @@ export default function ProductManager() {
                 onChange={(e) =>
                   setEditData({ ...editData, price: e.target.value })
                 }
-                className="border p-2 rounded w-full"
-                placeholder="Price"
+                className="w-full border p-2 rounded"
               />
 
               <input
@@ -274,31 +280,30 @@ export default function ProductManager() {
                 onChange={(e) =>
                   setEditData({ ...editData, stock: e.target.value })
                 }
-                className="border p-2 rounded w-full"
-                placeholder="Stock"
+                className="w-full border p-2 rounded"
               />
 
               <textarea
                 value={editData.description}
                 onChange={(e) =>
-                  setEditData({ ...editData, description: e.target.value })
+                  setEditData({
+                    ...editData,
+                    description: e.target.value,
+                  })
                 }
-                className="border p-2 rounded w-full h-24"
+                className="w-full border p-2 rounded"
               />
 
-              <button
-                type="submit"
-                className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Update Product
-              </button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setImageFile(e.target.files[0])
+                }
+              />
 
-              <button
-                onClick={() => setEditModalOpen(false)}
-                type="button"
-                className="w-full mt-2 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
+              <button className="w-full bg-orange-500 text-white py-2 rounded">
+                Update
               </button>
             </form>
           </div>

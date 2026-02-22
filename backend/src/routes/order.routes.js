@@ -5,7 +5,8 @@ import {
   easybuzzWebhook,
   getUserOrders,
   generateInvoice,
-  getAllOrders
+  getAllOrders,
+  updateOrderStatus
 } from "../controllers/order.controllers.js";
 
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -16,7 +17,7 @@ router.post("/create", verifyJWT,createOrder); // supports guest checkout
 router.post("/initiate-payment", initiatePayment);
 router.post("/webhook", easybuzzWebhook);
 router.get("/invoice/:id", verifyJWT, generateInvoice);
-
+router.patch("/:id/status", updateOrderStatus);
 router.get("/", verifyJWT, getUserOrders);
 router.get("/all", getAllOrders);
 

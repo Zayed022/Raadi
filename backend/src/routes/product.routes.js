@@ -9,7 +9,11 @@ import {
   getRecommendedProducts,
   getTopProducts,
   getFeatureProducts,
-  getBestSeller
+  getBestSeller,
+  toggleTopProduct,
+  toggleFeaturedProduct,
+  toggleBestSeller,
+  updateProductImage
 } from "../controllers/product.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -35,7 +39,10 @@ router.post(
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 router.get("/recommended/:productId", getRecommendedProducts);
-
+router.patch("/:id/toggle-top", toggleTopProduct);
+router.patch("/:id/toggle-featured", toggleFeaturedProduct);
+router.patch("/:id/toggle-bestseller", toggleBestSeller);
+router.put("/:id/update-image", upload.fields([{ name: "image", maxCount: 1 }]), updateProductImage);
 
 router.get("/:id", getProductById);
 

@@ -385,3 +385,144 @@ export const getBestSeller= async (req, res) => {
   }
 };
 
+export const toggleTopProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isTopProduct = !product.isTopProduct;
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Product ${
+        product.isTopProduct ? "added to" : "removed from"
+      } Top Products`,
+      product,
+    });
+  } catch (error) {
+    console.error("Toggle Top Product Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const toggleFeaturedProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isFeatureProduct = !product.isFeatureProduct;
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Product ${
+        product.isFeatureProduct ? "added to" : "removed from"
+      } Featured Products`,
+      product,
+    });
+  } catch (error) {
+    console.error("Toggle Featured Product Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const toggleBestSeller = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isBestSeller = !product.isBestSeller;
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Product ${
+        product.isBestSeller ? "marked as" : "removed from"
+      } Best Seller`,
+      product,
+    });
+  } catch (error) {
+    console.error("Toggle Best Seller Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const updateProductImage = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const imageLocalPath = req.files?.image?.[0]?.path;
+
+    if (!imageLocalPath) {
+      return res.status(400).json({
+        success: false,
+        message: "Image file is required",
+      });
+    }
+
+    // Upload new image
+    const uploadedImage = await uploadOnCloudinary(imageLocalPath);
+
+    if (!uploadedImage) {
+      return res.status(400).json({
+        success: false,
+        message: "Image upload failed",
+      });
+    }
+
+    // Replace image (single image case)
+    product.images = [uploadedImage.url];
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Product image updated successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Update Product Image Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
+

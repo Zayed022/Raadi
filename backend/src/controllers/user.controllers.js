@@ -26,7 +26,11 @@ export const googleLogin = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    let user = await User.findOne({ email });
+    console.log("Incoming Google Email:", email);
+
+let user = await User.findOne({ email });
+
+console.log("User found in DB:", user ? user.email : "Not Found");
 
     if (!user) {
       user = await User.create({
@@ -37,9 +41,11 @@ export const googleLogin = async (req, res) => {
         phone,
         lastLogin: new Date()
       });
+      console.log("New user created with email:", user.email);
     } else {
       user.lastLogin = new Date();
       await user.save();
+      console.log("Existing user login:", user.email);
     }
 
     const { accessToken, refreshToken } = await generateTokens(user);

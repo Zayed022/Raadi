@@ -51,18 +51,18 @@ console.log("User found in DB:", user ? user.email : "Not Found");
     const { accessToken, refreshToken } = await generateTokens(user);
 
     res.cookie("accessToken", accessToken, {
-  httpOnly: true,
-  secure: isProd,       // TRUE on production
-  sameSite: isProd ? "none" : "lax",
-  path: "/",
-});
-
-res.cookie("refreshToken", refreshToken, {
-  httpOnly: true,
-  secure: isProd,
-  sameSite: isProd ? "none" : "lax",
-  path: "/",
-});
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
+    
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
 
 return res.status(200).json({
   success: true,

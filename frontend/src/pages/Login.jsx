@@ -48,7 +48,7 @@ export default function Login() {
         className="bg-white w-[90%] max-w-lg py-12 px-10 rounded-3xl shadow-2xl border border-gray-200 flex flex-col items-center space-y-10"
       >
         <h1 className="text-5xl font-extrabold text-[#1b2945] text-center">
-          Welcome to <span className="text-orange-500">RAADIi</span>
+          Welcome to <span className="text-orange-500">RAADII</span>
         </h1>
 
         <p className="text-gray-600 text-center text-lg max-w-sm">

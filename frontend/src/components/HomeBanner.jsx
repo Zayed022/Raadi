@@ -16,49 +16,29 @@ export default function HomeBanner() {
 
   return (
     <section className="relative w-full overflow-hidden">
-      {/* Placeholder skeleton until image loads */}
       {!banner ? (
-        <div className="w-full h-[55vh] sm:h-[65vh] md:h-[80vh] lg:h-[90vh] bg-gray-200 animate-pulse"></div>
+        <div className="w-full aspect-[16/9] bg-gray-200 animate-pulse" />
       ) : (
         <div
-          className="
-            w-full 
-            h-[55vh] 
-            sm:h-[65vh] 
-            md:h-[80vh] 
-            lg:h-[90vh]
-            relative
-            overflow-hidden
-          "
-          style={{
-            backgroundColor: banner.bgColor || "#f5d7b0",
-          }}
+          className="relative w-full aspect-[16/9] overflow-hidden bg-black"
         >
-          {/* Optimized Banner Image */}
           <img
-  loading="lazy"
-  src={banner.bannerImage}
-  alt="Home Banner"
-  onLoad={() => setLoaded(true)}
-  className={`
-    w-full h-full
-    object-contain       
-    sm:object-cover      
-    transition-opacity duration-700
-    ${loaded ? "opacity-100" : "opacity-0"}
-  `}
-/>
-
-
-          {/* Low-quality blurry preview while loading */}
+            src={banner.bannerImage}
+            alt="Home Banner"
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+            className={`
+              absolute inset-0
+              w-full h-full
+              object-cover
+              object-center
+              transition-opacity duration-700 ease-in-out
+              ${loaded ? "opacity-100" : "opacity-0"}
+            `}
+          />
+  
           {!loaded && (
-            <div
-              className="
-              absolute inset-0 
-              bg-gray-300 blur-xl 
-              animate-pulse
-            "
-            ></div>
+            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
           )}
         </div>
       )}

@@ -36,7 +36,7 @@ export default function Navbar() {
   const fetchWishlistCount = async () => {
     try {
       const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/wishlist",
+        "https://raadi-jdun.onrender.com/api/v1/wishlist",
         { withCredentials: true }
       );
       setWishlistCount(res.data.wishlist?.products?.length || 0);
@@ -48,7 +48,7 @@ export default function Navbar() {
   const fetchCartCount = async () => {
     try {
       const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/cart",
+        "https://raadi-jdun.onrender.com/api/v1/cart",
         { withCredentials: true }
       );
       const qty =
@@ -79,7 +79,7 @@ export default function Navbar() {
 
     try {
       const res = await axios.get(
-        `https://raadi.onrender.com/api/v1/products?search=${query}`
+        `https://raadi-jdun.onrender.com/api/v1/products?search=${query}`
       );
       setSearchResults(res.data.products || []);
       setShowDropdown(true);

@@ -50,7 +50,7 @@ export default function CategoryProducts() {
       setLoading(true);
   
       const res = await axios.get(
-        `https://raadi.onrender.com/api/v1/products/category/${encodeURIComponent(category)}`
+        `https://raadi-jdun.onrender.com/api/v1/products/category/${encodeURIComponent(category)}`
       );
   
       setProducts(
@@ -68,7 +68,7 @@ export default function CategoryProducts() {
   const fetchWishlist = async () => {
     try {
       const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/wishlist",
+        "https://raadi-jdun.onrender.com/api/v1/wishlist",
         { withCredentials: true }
       );
       setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
@@ -81,13 +81,13 @@ export default function CategoryProducts() {
     try {
       if (wishlist.includes(productId)) {
         await axios.delete(
-          "https://raadi.onrender.com/api/v1/wishlist/remove",
+          "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
           { data: { productId }, withCredentials: true }
         );
         setWishlist((prev) => prev.filter((id) => id !== productId));
       } else {
         await axios.post(
-          "https://raadi.onrender.com/api/v1/wishlist/add",
+          "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
           { productId },
           { withCredentials: true }
         );

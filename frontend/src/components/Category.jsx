@@ -13,7 +13,7 @@ export default function CategorySection() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("https://raadi.onrender.com/api/v1/category/");
+        const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/category/");
         setCategories(res.data.categories || []);
       } catch (err) {
         console.error("Fetch categories error:", err);

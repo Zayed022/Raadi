@@ -14,7 +14,7 @@ export default function AboutIntroSection() {
     let active = true;
 
     axios
-      .get("https://raadi.onrender.com/api/v1/aboutIntro/", { timeout: 8000 })
+      .get("https://raadi-jdun.onrender.com/api/v1/aboutIntro/", { timeout: 8000 })
       .then((res) => {
         if (active) setData(res.data.intro || null);
       })

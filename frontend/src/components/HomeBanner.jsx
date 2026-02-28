@@ -7,7 +7,7 @@ export default function HomeBanner() {
 
   useEffect(() => {
     axios
-      .get("https://raadi.onrender.com/api/v1/homeBanner/", {
+      .get("https://raadi-jdun.onrender.com/api/v1/homeBanner/", {
         cache: "force-cache",
       })
       .then((res) => setBanner(res.data.banner))

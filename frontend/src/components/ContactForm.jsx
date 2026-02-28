@@ -30,7 +30,7 @@ export default function ContactForm() {
     try {
       setLoading(true);
       await axios.post(
-        "https://raadi.onrender.com/api/v1/contact",
+        "https://raadi-jdun.onrender.com/api/v1/contact",
         form
       );
       setSuccess(true);

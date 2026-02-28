@@ -33,7 +33,7 @@ export default function BestSeller() {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/products/best-seller"
+        "https://raadi-jdun.onrender.com/api/v1/products/best-seller"
       );
       setProducts(res.data.products || []);
     } catch (err) {

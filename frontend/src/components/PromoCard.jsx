@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import LazyImage from "./LazyImage";
 import React from "react";
 
-const API_BASE = "https://raadi.onrender.com/api/v1/promoCard/";
+const API_BASE = "https://raadi-jdun.onrender.com/api/v1/promoCard/";
 
 const positionColors = {
   1: "#A8A8A8",

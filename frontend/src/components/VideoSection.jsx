@@ -7,7 +7,7 @@ export default function VideoSection() {
 
   useEffect(() => {
     axios
-      .get("https://raadi.onrender.com/api/v1/videoSection/")
+      .get("https://raadi-jdun.onrender.com/api/v1/videoSection/")
       .then((res) => setData(res.data.video))
       .catch((err) => console.error("Video fetch error:", err));
   }, []);

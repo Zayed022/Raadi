@@ -68,10 +68,10 @@ export default function Checkout() {
       setLoading(true);
       try {
         const [cartRes, profileRes] = await Promise.all([
-          axios.get("https://raadi.onrender.com/api/v1/cart", {
+          axios.get("https://raadi-jdun.onrender.com/api/v1/cart", {
             withCredentials: true,
           }),
-          axios.get("https://raadi.onrender.com/api/v1/users/profile", {
+          axios.get("https://raadi-jdun.onrender.com/api/v1/users/profile", {
             withCredentials: true,
           }),
         ]);
@@ -153,7 +153,7 @@ export default function Checkout() {
 
   try {
     const res = await axios.post(
-      "https://raadi.onrender.com/api/v1/promoCode/apply-promo",
+      "https://raadi-jdun.onrender.com/api/v1/promoCode/apply-promo",
       { code: couponCode },
       { withCredentials: true }
     );
@@ -258,7 +258,7 @@ const handlePlaceOrder = async () => {
 
   try {
     const res = await axios.post(
-      "https://raadi.onrender.com/api/v1/order/create",
+      "https://raadi-jdun.onrender.com/api/v1/order/create",
       body,
       { withCredentials: true }
     );
@@ -287,7 +287,7 @@ const handlePlaceOrder = async () => {
 
   const fetchPricingConfig = async () => {
   try {
-    const res = await axios.get("https://raadi.onrender.com/api/v1/pricingConfig");
+    const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/pricingConfig");
     setPricingConfig({
       taxAmount: res.data.config?.taxAmount || 0,
       shippingAmount: res.data.config?.shippingAmount || 0,

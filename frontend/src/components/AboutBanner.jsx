@@ -11,7 +11,7 @@ export default function AboutBanner() {
   // Fetch banners
   useEffect(() => {
     axios
-      .get("https://raadi.onrender.com/api/v1/aboutBanner/")
+      .get("https://raadi-jdun.onrender.com/api/v1/aboutBanner/")
       .then((res) => {
         setBanners(res.data.banners || []);
       })

@@ -9,7 +9,7 @@ export default function MyOrders() {
 
   useEffect(() => {
     axios
-      .get("https://raadi.onrender.com/api/v1/order", {
+      .get("https://raadi-jdun.onrender.com/api/v1/order", {
         withCredentials: true,
       })
       .then((res) => {
@@ -21,7 +21,7 @@ export default function MyOrders() {
 
   const downloadInvoice = (orderId) => {
     window.open(
-      `https://raadi.onrender.com/api/v1/order/invoice/${orderId}`,
+      `https://raadi-jdun.onrender.com/api/v1/order/invoice/${orderId}`,
       "_blank"
     );
   };

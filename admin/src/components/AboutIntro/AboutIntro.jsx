@@ -20,7 +20,7 @@ export default function AdminAboutIntro() {
   // Fetch Existing Intro
   const fetchIntro = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/aboutIntro/");
+      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/aboutIntro/");
       if (res.data.intro) {
         const d = res.data.intro;
         setIntro(d);
@@ -94,7 +94,7 @@ export default function AdminAboutIntro() {
     try {
       setLoading(true);
       await axios.post(
-        "https://raadi.onrender.com/api/v1/aboutIntro/",
+        "https://raadi-jdun.onrender.com/api/v1/aboutIntro/",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -114,7 +114,7 @@ export default function AdminAboutIntro() {
     if (!window.confirm("Delete this intro section permanently?")) return;
 
     try {
-      await axios.delete("https://raadi.onrender.com/api/v1/aboutIntro/delete");
+      await axios.delete("https://raadi-jdun.onrender.com/api/v1/aboutIntro/delete");
       alert("Intro deleted");
       resetForm();
     } catch (err) {

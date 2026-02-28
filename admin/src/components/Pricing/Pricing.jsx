@@ -17,7 +17,7 @@ export default function AdminPricingConfig() {
   const fetchConfig = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("https://raadi.onrender.com/api/v1/pricing/");
+      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/pricing/");
       if (res.data.config) {
         setConfig(res.data.config);
       }
@@ -34,7 +34,7 @@ export default function AdminPricingConfig() {
       setMessage("");
 
       const res = await axios.post(
-        "https://raadi.onrender.com/api/v1/pricing/update",
+        "https://raadi-jdun.onrender.com/api/v1/pricing/update",
         config
       );
 

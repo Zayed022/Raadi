@@ -8,8 +8,8 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 
-const API = "https://raadi.onrender.com/api/v1/featuredProduct";
-const PRODUCT_API = "https://raadi.onrender.com/api/v1/products";
+const API = "https://raadi-jdun.onrender.com/api/v1/featuredProduct";
+const PRODUCT_API = "https://raadi-jdun.onrender.com/api/v1/products";
 
 export default function AdminSpecialProduct() {
   const [specials, setSpecials] = useState([]);

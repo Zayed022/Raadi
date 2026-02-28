@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminGallery() {
-  const API = "https://raadi.onrender.com/api/v1/gallery";
+  const API = "https://raadi-jdun.onrender.com/api/v1/gallery";
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);

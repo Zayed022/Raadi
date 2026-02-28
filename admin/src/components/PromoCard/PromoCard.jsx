@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiEdit2, FiTrash2, FiUploadCloud } from "react-icons/fi";
 
-const API = "https://raadi.onrender.com/api/v1/promoCard";
+const API = "https://raadi-jdun.onrender.com/api/v1/promoCard";
 
 export default function AdminPromoCards() {
   const [cards, setCards] = useState([]);

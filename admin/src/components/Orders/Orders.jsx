@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = "https://raadi.onrender.com/api/v1";
+const API = "https://raadi-jdun.onrender.com/api/v1";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);

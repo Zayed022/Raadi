@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminCategories() {
-  const API = "https://raadi.onrender.com/api/v1/category";
+  const API = "https://raadi-jdun.onrender.com/api/v1/category";
 
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({

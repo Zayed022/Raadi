@@ -3,7 +3,7 @@ import axios from "axios";
 import { FiUploadCloud } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 
-const API = "https://raadi.onrender.com/api/v1";
+const API = "https://raadi-jdun.onrender.com/api/v1";
 
 export default function ProductAdd() {
   const [categories, setCategories] = useState([]);

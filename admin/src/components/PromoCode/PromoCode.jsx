@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiEdit2, FiTrash2, FiCheckCircle, FiGift } from "react-icons/fi";
 
-const API = "https://raadi.onrender.com/api/v1/promoCode";
+const API = "https://raadi-jdun.onrender.com/api/v1/promoCode";
 
 export default function AdminPromoCodes() {
   const [codes, setCodes] = useState([]);

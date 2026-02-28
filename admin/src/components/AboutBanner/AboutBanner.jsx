@@ -3,7 +3,7 @@ import axios from "axios";
 import { FiUpload, FiTrash2, FiImage } from "react-icons/fi";
 
 export default function AdminAboutBanner() {
-  const API = "https://raadi.onrender.com/api/v1/aboutBanner/";
+  const API = "https://raadi-jdun.onrender.com/api/v1/aboutBanner/";
 
   const [banners, setBanners] = useState([]);
   const [title, setTitle] = useState("");

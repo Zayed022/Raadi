@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminBestSellers() {
-  const API = "https://raadi.onrender.com/api/v1/bestSeller";
+  const API = "https://raadi-jdun.onrender.com/api/v1/bestSeller";
 
   const [bestSellers, setBestSellers] = useState([]);
   const [productId, setProductId] = useState("");

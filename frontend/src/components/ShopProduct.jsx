@@ -306,80 +306,97 @@ export default function ShopProduct() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-8">
-            {products.map((p) => (
-              <div
-                key={p._id}
-                onClick={() => openProductDetails(p._id)}
-                className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
-              >
-                <div className="relative bg-[#f5f6f8] h-64 flex items-center justify-center p-6">
-                  <img
-                    src={p.images[0]}
-                    alt={p.name}
-                    className="max-h-full object-contain group-hover:scale-105 transition"
-                  />
+  {products.map((p) => {
+    // ✅ FIXED: Proper JS scope
+    const discount =
+      p.discount ??
+      (p.mrp && p.price
+        ? Math.round(((p.mrp - p.price) / p.mrp) * 100)
+        : 0);
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleWishlist(p._id);
-                    }}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-md"
-                  >
-                    {wishlist.includes(p._id) ? (
-                      <FaHeart size={18} className="text-orange-500" />
-                    ) : (
-                      <FiHeart size={18} className="text-gray-600" />
-                    )}
-                  </button>
-                </div>
+    return (
+      <div
+        key={p._id}
+        onClick={() => openProductDetails(p._id)}
+        className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
+      >
+        <div className="relative bg-[#f5f6f8] h-64 flex items-center justify-center p-6">
+          
+          {/* ✅ DISCOUNT BADGE */}
+          {discount > 0 && (
+            <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-md shadow-sm">
+              {discount}% off
+            </span>
+          )}
 
-                <div className="flex flex-col flex-1 p-5">
-                  <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px]">
-                    {p.name}
-                  </h3>
+          <img
+            src={p.images[0]}
+            alt={p.name}
+            className="max-h-full object-contain group-hover:scale-105 transition"
+          />
 
-                  <div className="mt-2 flex items-center gap-2">
-                    {p.mrp && (
-                      <span className="text-xs text-gray-400 line-through">
-                        ₹{p.mrp}
-                      </span>
-                    )}
-                    <span className="text-lg font-semibold text-gray-900">
-                      ₹{p.price}
-                    </span>
-                  </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleWishlist(p._id);
+            }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-md"
+          >
+            {wishlist.includes(p._id) ? (
+              <FaHeart size={18} className="text-orange-500" />
+            ) : (
+              <FiHeart size={18} className="text-gray-600" />
+            )}
+          </button>
+        </div>
 
-                  <div className="mt-auto pt-4">
-                    {p.stock === 0 ? (
-                      <button disabled className="w-full py-2 bg-gray-200 text-gray-600 rounded-lg text-sm">
-                        Out of Stock
-                      </button>
-                    ) : cart[p._id] ? (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-between bg-orange-500 text-white rounded-lg px-4 py-2"
-                      >
-                        <button onClick={() => updateQuantity(p._id, cart[p._id] - 1)}>–</button>
-                        <span>{cart[p._id]}</span>
-                        <button onClick={() => updateQuantity(p._id, cart[p._id] + 1)}>+</button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart(p._id);
-                        }}
-                        className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition"
-                      >
-                        Add to Cart
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="flex flex-col flex-1 p-5">
+          <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px]">
+            {p.name}
+          </h3>
+
+          <div className="mt-2 flex items-center gap-2">
+            {p.mrp && (
+              <span className="text-xs text-gray-400 line-through">
+                ₹{p.mrp}
+              </span>
+            )}
+            <span className="text-lg font-semibold text-gray-900">
+              ₹{p.price}
+            </span>
           </div>
+
+          <div className="mt-auto pt-4">
+            {p.stock === 0 ? (
+              <button disabled className="w-full py-2 bg-gray-200 text-gray-600 rounded-lg text-sm">
+                Out of Stock
+              </button>
+            ) : cart[p._id] ? (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center justify-between bg-orange-500 text-white rounded-lg px-4 py-2"
+              >
+                <button onClick={() => updateQuantity(p._id, cart[p._id] - 1)}>–</button>
+                <span>{cart[p._id]}</span>
+                <button onClick={() => updateQuantity(p._id, cart[p._id] + 1)}>+</button>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(p._id);
+                }}
+                className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition"
+              >
+                Add to Cart
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
 
         </div>
       </div>

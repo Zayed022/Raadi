@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminHomeBanner() {
-  const API = "https://raadi.onrender.com/api/v1/homeBanner";
+  const API = "https://raadi-jdun.onrender.com/api/v1/homeBanner";
 
   const [banner, setBanner] = useState(null);
   const [loading, setLoading] = useState(false);

@@ -292,6 +292,12 @@ export default function ProductDetails() {
       </section>
     );
   }
+  // ✅ DISCOUNT CALCULATION (SAFE)
+const discount =
+product?.discount ??
+(product?.mrp && product?.price
+  ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+  : 0);
 
   return (
     <>
@@ -332,10 +338,23 @@ export default function ProductDetails() {
 
             <p className="text-gray-600 text-base md:text-lg max-w-2xl">{product.description || product.shortDescription}</p>
 
-            <div className="flex items-baseline gap-6">
-              {product.mrp && <span className="text-gray-400 line-through text-lg md:text-2xl">₹{product.mrp?.toLocaleString("en-IN")}</span>}
-              <div className="text-2xl md:text-4xl font-bold text-orange-600">₹{product.price?.toLocaleString("en-IN")}</div>
-            </div>
+            <div className="flex items-center gap-6 flex-wrap">
+  {product.mrp && (
+    <span className="text-gray-400 line-through text-lg md:text-2xl">
+      ₹{product.mrp?.toLocaleString("en-IN")}
+    </span>
+  )}
+
+  <div className="text-2xl md:text-4xl font-bold text-orange-600">
+    ₹{product.price?.toLocaleString("en-IN")}
+  </div>
+
+  {discount > 0 && (
+    <span className="bg-orange-500 text-white text-sm font-semibold px-3 py-1 rounded-md">
+      {discount}% off
+    </span>
+  )}
+</div>
 
             {/* ACTIONS */}
             <div className="flex flex-wrap items-center gap-4 mt-2">

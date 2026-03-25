@@ -184,7 +184,7 @@ export const getProductById = async (req, res) => {
 // ===========================
 export const updateProduct = async (req, res) => {
   try {
-    let product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -193,43 +193,57 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // ✅ Handle new images if provided
     let newImages = [];
 
-    if (req.files && req.files.length > 0) {
-      const uploads = await Promise.all(
-        req.files.map((file) => uploadOnCloudinary(file.path))
-      );
+    // ✅ Safe file handling
+    if (Array.isArray(req.files) && req.files.length > 0) {
+      for (const file of req.files) {
+        if (!file?.path) continue;
 
-      newImages = uploads.map((img) => img.url);
+        const uploaded = await uploadOnCloudinary(file.path);
+        if (uploaded?.url) {
+          newImages.push(uploaded.url);
+        }
+      }
     }
 
-    // ✅ Merge images (append instead of replace)
+    // ✅ Fix existing images corruption
+    const existingImages = Array.isArray(product.images)
+      ? product.images
+      : [];
+
     const updatedImages =
       newImages.length > 0
-        ? [...product.images, ...newImages]
-        : product.images;
+        ? [...existingImages, ...newImages]
+        : existingImages;
 
-    // ✅ Update product
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        images: updatedImages,
-      },
-      { new: true }
-    );
+    // ✅ CONTROLLED UPDATE (NO SPREAD)
+    product.name = req.body.name || product.name;
+    product.description = req.body.description || product.description;
+    product.price = Number(req.body.price) || product.price;
+    product.stock = Number(req.body.stock) || product.stock;
+    product.category = req.body.category || product.category;
+    product.mrp = req.body.mrp ? Number(req.body.mrp) : product.mrp;
+    product.discount = req.body.discount
+      ? Number(req.body.discount)
+      : product.discount;
+    product.brand = req.body.brand || product.brand;
+
+    product.images = updatedImages;
+
+    await product.save();
 
     return res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      product: updatedProduct,
+      product,
     });
+
   } catch (error) {
-    console.error("Update Product Error:", error);
+    console.error("🔥 Update Product Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message, // 👈 SHOW REAL ERROR
     });
   }
 };

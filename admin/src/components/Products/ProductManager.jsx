@@ -85,7 +85,14 @@ export default function ProductManager() {
   
       // ✅ append text fields
       Object.keys(editData).forEach((key) => {
-        formData.append(key, editData[key]);
+        if (
+          key !== "images" &&
+          key !== "_id" &&
+          key !== "createdAt" &&
+          key !== "updatedAt"
+        ) {
+          formData.append(key, editData[key]);
+        }
       });
   
       // ✅ append multiple images

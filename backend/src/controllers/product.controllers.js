@@ -20,28 +20,35 @@ export const createProduct = async (req, res) => {
       isBestSeller,
     } = req.body;
 
-    if (!name || !price || !category || !stock) {
+    if (!name || !price || !category || stock === undefined) {
       return res.status(400).json({
         success: false,
         message: "name, price, category and stock are required",
       });
     }
 
-    // Check if image has been uploaded
-    const imageLocalPath = req.files?.image?.[0]?.path;
+    // ✅ Get multiple images
+    const imageFiles = req.files;
 
-    if (!imageLocalPath) {
-      return res.status(400).json({ success: false, message: "Image file is required" });
+    if (!imageFiles || imageFiles.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one image is required",
+      });
     }
 
-    // Upload image to Cloudinary
-    const uploadedImage = await uploadOnCloudinary(imageLocalPath);
+    // ✅ Upload all images to Cloudinary
+    const uploadedImages = await Promise.all(
+      imageFiles.map(async (file) => {
+        const result = await uploadOnCloudinary(file.path);
+        if (!result) {
+          throw new Error("Image upload failed");
+        }
+        return result.url;
+      })
+    );
 
-    if (!uploadedImage) {
-      return res.status(400).json({ success: false, message: "Failed to upload image" });
-    }
-
-    // Create Product
+    // ✅ Create product with multiple images
     const product = await Product.create({
       name,
       description,
@@ -54,7 +61,7 @@ export const createProduct = async (req, res) => {
       isTopProduct,
       isFeatureProduct,
       isBestSeller,
-      images: [uploadedImage.url],
+      images: uploadedImages, // <-- key change
     });
 
     return res.status(201).json({
@@ -68,7 +75,7 @@ export const createProduct = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
-      error,
+      error: error.message,
     });
   }
 };
@@ -179,22 +186,51 @@ export const updateProduct = async (req, res) => {
   try {
     let product = await Product.findById(req.params.id);
 
-    if (!product)
-      return res.status(404).json({ success: false, message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
 
-    product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    // ✅ Handle new images if provided
+    let newImages = [];
+
+    if (req.files && req.files.length > 0) {
+      const uploads = await Promise.all(
+        req.files.map((file) => uploadOnCloudinary(file.path))
+      );
+
+      newImages = uploads.map((img) => img.url);
+    }
+
+    // ✅ Merge images (append instead of replace)
+    const updatedImages =
+      newImages.length > 0
+        ? [...product.images, ...newImages]
+        : product.images;
+
+    // ✅ Update product
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        ...req.body,
+        images: updatedImages,
+      },
+      { new: true }
+    );
 
     return res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      product,
+      product: updatedProduct,
     });
-
   } catch (error) {
     console.error("Update Product Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 

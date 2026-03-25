@@ -13,7 +13,7 @@ export default function ProductManager() {
 
   const [editData, setEditData] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -77,27 +77,35 @@ export default function ProductManager() {
 
   const updateProduct = async (e) => {
     e.preventDefault();
-
+  
     try {
       setActionLoading(true);
-
-      await axios.put(`${API}/products/${editData._id}`, editData);
-
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("image", imageFile);
-
-        await axios.put(
-          `${API}/products/${editData._id}/update-image`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      }
-
+  
+      const formData = new FormData();
+  
+      // ✅ append text fields
+      Object.keys(editData).forEach((key) => {
+        formData.append(key, editData[key]);
+      });
+  
+      // ✅ append multiple images
+      imageFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+  
+      await axios.put(
+        `${API}/products/${editData._id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+  
       toast.success("Product updated");
       setEditModalOpen(false);
-      setImageFile(null);
+      setImageFiles([]);
       fetchProducts();
+  
     } catch {
       toast.error("Update failed");
     } finally {
@@ -294,13 +302,22 @@ export default function ProductManager() {
                 className="w-full border p-2 rounded"
               />
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setImageFile(e.target.files[0])
-                }
-              />
+<input
+  type="file"
+  accept="image/*"
+  multiple
+  onChange={(e) => setImageFiles([...e.target.files])}
+/>
+
+<div className="flex gap-2 flex-wrap mt-2">
+  {editData.images?.map((img, i) => (
+    <img
+      key={i}
+      src={img}
+      className="w-12 h-12 object-cover rounded"
+    />
+  ))}
+</div>
 
               <button className="w-full bg-orange-500 text-white py-2 rounded">
                 Update

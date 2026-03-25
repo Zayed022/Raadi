@@ -62,6 +62,7 @@ export default function ProductDetails() {
   const [userLoggedIn, setUserLoggedIn] = useState(false);
 
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [activeImage, setActiveImage] = useState(0);
 
 
   // Keep UI snappy - fetch all on mount / id change
@@ -71,6 +72,18 @@ export default function ProductDetails() {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (!product?.images || product.images.length <= 1) return;
+  
+    const interval = setInterval(() => {
+      setActiveImage((prev) =>
+        prev === product.images.length - 1 ? 0 : prev + 1
+      );
+    }, 2500); // 2.5 sec rotation
+  
+    return () => clearInterval(interval);
+  }, [product]);
 
   /* -------------------- API calls -------------------- */
 
@@ -299,6 +312,8 @@ product?.discount ??
   ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
   : 0);
 
+  const images = product.images || [];
+
   return (
     <>
     <section className="min-h-screen px-4 py-8 bg-gray-50">
@@ -310,7 +325,7 @@ product?.discount ??
           <div className="flex justify-center">
             <div className="bg-[#f7f8fb] rounded-2xl p-6 md:p-10 shadow-lg transform transition-transform duration-300 hover:-translate-y-2">
               <img
-                src={product.images?.[0]}
+                src={images[activeImage] || images[0]}
                 alt={product.name}
                 className="w-full max-w-[520px] h-auto object-contain rounded-lg"
               />

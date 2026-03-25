@@ -32,11 +32,11 @@ router.get("/:id", getProductById);
 router.post(
   "/add-product",
   
-  upload.fields([{ name: "image", maxCount: 1 }]),
+  upload.array("images", 5) ,
   createProduct
 );
 
-router.put("/:id", updateProduct);
+router.put("/:id",upload.array("images", 5), updateProduct);
 router.delete("/:id", deleteProduct);
 router.get("/recommended/:productId", getRecommendedProducts);
 router.patch("/:id/toggle-top", toggleTopProduct);

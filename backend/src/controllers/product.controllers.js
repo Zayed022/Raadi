@@ -28,7 +28,7 @@ export const createProduct = async (req, res) => {
     }
 
     // ✅ Get multiple images
-    const imageFiles = req.files;
+    const imageFiles = req.files?.images || [];
 
     if (!imageFiles || imageFiles.length === 0) {
       return res.status(400).json({

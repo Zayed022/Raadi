@@ -91,7 +91,14 @@ export default function ProductManager() {
           key !== "createdAt" &&
           key !== "updatedAt"
         ) {
-          formData.append(key, editData[key]);
+          let value = editData[key];
+      
+          // 🔥 convert numbers properly
+          if (key === "price" || key === "stock" || key === "mrp" || key === "discount") {
+            value = Number(value);
+          }
+      
+          formData.append(key, value);
         }
       });
   

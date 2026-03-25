@@ -193,11 +193,13 @@ export const updateProduct = async (req, res) => {
       });
     }
 
+    // ✅ FIX FILE HANDLING
+    const imageFiles = req.files?.images || [];
+
     let newImages = [];
 
-    // ✅ Safe file handling
-    if (Array.isArray(req.files) && req.files.length > 0) {
-      for (const file of req.files) {
+    if (imageFiles.length > 0) {
+      for (const file of imageFiles) {
         if (!file?.path) continue;
 
         const uploaded = await uploadOnCloudinary(file.path);
@@ -207,7 +209,7 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    // ✅ Fix existing images corruption
+    // ✅ SAFE EXISTING IMAGES
     const existingImages = Array.isArray(product.images)
       ? product.images
       : [];
@@ -217,16 +219,17 @@ export const updateProduct = async (req, res) => {
         ? [...existingImages, ...newImages]
         : existingImages;
 
-    // ✅ CONTROLLED UPDATE (NO SPREAD)
+    // ✅ SAFE FIELD UPDATE (NO SPREAD)
     product.name = req.body.name || product.name;
     product.description = req.body.description || product.description;
-    product.price = Number(req.body.price) || product.price;
-    product.stock = Number(req.body.stock) || product.stock;
-    product.category = req.body.category || product.category;
+
+    // 🔥 IMPORTANT: FORCE NUMBER
+    product.price = req.body.price ? Number(req.body.price) : product.price;
+    product.stock = req.body.stock ? Number(req.body.stock) : product.stock;
     product.mrp = req.body.mrp ? Number(req.body.mrp) : product.mrp;
-    product.discount = req.body.discount
-      ? Number(req.body.discount)
-      : product.discount;
+    product.discount = req.body.discount ? Number(req.body.discount) : product.discount;
+
+    product.category = req.body.category || product.category;
     product.brand = req.body.brand || product.brand;
 
     product.images = updatedImages;
@@ -243,7 +246,7 @@ export const updateProduct = async (req, res) => {
     console.error("🔥 Update Product Error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message, // 👈 SHOW REAL ERROR
+      message: error.message,
     });
   }
 };

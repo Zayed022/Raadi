@@ -76,7 +76,7 @@ export default function ProductAdd() {
         formData.append(key, form[key]);
       });
 
-      formData.append("image", imageFile);
+      formData.append("images", imageFile);
 
       const res = await axios.post(`${API}/products/add-product`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

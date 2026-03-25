@@ -73,17 +73,7 @@ export default function ProductDetails() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  useEffect(() => {
-    if (!product?.images || product.images.length <= 1) return;
   
-    const interval = setInterval(() => {
-      setActiveImage((prev) =>
-        prev === product.images.length - 1 ? 0 : prev + 1
-      );
-    }, 2500); // 2.5 sec rotation
-  
-    return () => clearInterval(interval);
-  }, [product]);
 
   /* -------------------- API calls -------------------- */
 
@@ -322,15 +312,35 @@ product?.discount ??
         {/* PRODUCT CARD */}
         <div className="bg-white rounded-3xl p-6 md:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* LEFT: IMAGE */}
-          <div className="flex justify-center">
-            <div className="bg-[#f7f8fb] rounded-2xl p-6 md:p-10 shadow-lg transform transition-transform duration-300 hover:-translate-y-2">
-              <img
-                src={images[activeImage] || images[0]}
-                alt={product.name}
-                className="w-full max-w-[520px] h-auto object-contain rounded-lg"
-              />
-            </div>
-          </div>
+          <div className="flex justify-center gap-4">
+
+  {/* THUMBNAILS */}
+  <div className="flex flex-col gap-3">
+    {images.map((img, i) => (
+      <img
+        key={i}
+        src={img}
+        alt={`thumb-${i}`}
+        onClick={() => setActiveImage(i)}
+        className={`w-16 h-16 min-w-[64px] min-h-[64px] 
+          object-cover bg-white p-1 
+          rounded cursor-pointer border transition
+          ${activeImage === i ? "border-orange-500" : "border-gray-200"}
+        `}
+      />
+    ))}
+  </div>
+
+  {/* MAIN IMAGE (UNCHANGED STYLE) */}
+  <div className="bg-[#f7f8fb] rounded-2xl p-6 md:p-10 shadow-lg  hover:-translate-y-2">
+    <img
+      src={images[activeImage] || images[0]}
+      alt={product.name}
+      className="w-full max-w-[520px] h-auto object-contain rounded-lg"
+    />
+  </div>
+
+</div>
 
           {/* RIGHT: DETAILS */}
           <div className="space-y-4">

@@ -251,6 +251,57 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+export const deleteProductImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Image URL required",
+      });
+    }
+
+    // ❗ prevent deleting last image
+    if (product.images.length === 1) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one image is required",
+      });
+    }
+
+    // ✅ remove image
+    product.images = product.images.filter(
+      (img) => img !== imageUrl
+    );
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Image deleted successfully",
+      product,
+    });
+
+  } catch (error) {
+    console.error("Delete Image Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 // ===========================
 // Delete Product (Admin)
 // ===========================

@@ -56,6 +56,25 @@ export default function ProductManager() {
     }
   };
 
+  const handleDeleteImage = async (imageUrl) => {
+    try {
+      await axios.put(`${API}/products/${editData._id}/delete-image`, {
+        imageUrl,
+      });
+  
+      toast.success("Image deleted");
+  
+      // ✅ instant UI update
+      setEditData((prev) => ({
+        ...prev,
+        images: prev.images.filter((img) => img !== imageUrl),
+      }));
+  
+    } catch (err) {
+      toast.error("Failed to delete image");
+    }
+  };
+
   /* ================= TOGGLES ================= */
 
   const toggleFlag = async (id, type) => {
@@ -325,11 +344,23 @@ export default function ProductManager() {
 
 <div className="flex gap-2 flex-wrap mt-2">
   {editData.images?.map((img, i) => (
-    <img
-      key={i}
-      src={img}
-      className="w-12 h-12 object-cover rounded"
-    />
+    <div key={i} className="relative">
+
+      <img
+        src={img}
+        className="w-12 h-12 object-cover rounded"
+      />
+
+      {/* DELETE BUTTON */}
+      <button
+        type="button"
+        onClick={() => handleDeleteImage(img)}
+        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+      >
+        ✕
+      </button>
+
+    </div>
   ))}
 </div>
 

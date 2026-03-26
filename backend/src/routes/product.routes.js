@@ -13,7 +13,8 @@ import {
   toggleTopProduct,
   toggleFeaturedProduct,
   toggleBestSeller,
-  updateProductImage
+  updateProductImage,
+  deleteProductImage
 } from "../controllers/product.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -42,6 +43,7 @@ router.put("/:id",upload.fields([
   { name: "images", maxCount: 5 }
 ]), updateProduct);
 router.delete("/:id", deleteProduct);
+router.put("/:id/delete-image", deleteProductImage);
 router.get("/recommended/:productId", getRecommendedProducts);
 router.patch("/:id/toggle-top", toggleTopProduct);
 router.patch("/:id/toggle-featured", toggleFeaturedProduct);

@@ -6,7 +6,8 @@ import {
   getUserOrders,
   generateInvoice,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  verifyPayment
 } from "../controllers/order.controllers.js";
 
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -14,6 +15,7 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 const router = express.Router();
 
 router.post("/create", verifyJWT,createOrder); // supports guest checkout
+router.post("/payment/verify", verifyPayment);
 router.post("/initiate-payment", initiatePayment);
 router.post("/webhook", easybuzzWebhook);
 router.get("/invoice/:id", verifyJWT, generateInvoice);

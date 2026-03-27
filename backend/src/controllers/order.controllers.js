@@ -4,12 +4,13 @@ import Product from "../models/product.models.js";
 import Payment from "../models/payment.models.js";
 import PDFDocument from "pdfkit";
 import path from "path";
+import { razorpay } from "../utils/config.js";
+import crypto from "crypto";
+
 // ===========================
 // Create Order (Guest + Logged-in)
 // ===========================
-// ===========================
-// Create Order (COD + Online Payments)
-// ===========================
+
 export const createOrder = async (req, res) => {
   try {
     const { items, shippingAddress, customerDetails, totalAmount, paymentMethod } = req.body;
@@ -20,7 +21,6 @@ export const createOrder = async (req, res) => {
 
     const userId = req.user?._id || null;
 
-    // Create base order
     const order = await Order.create({
       user: userId,
       customerDetails,
@@ -28,21 +28,19 @@ export const createOrder = async (req, res) => {
       shippingAddress,
       totalAmount,
       orderStatus: paymentMethod === "cod" ? "confirmed" : "pending",
-      paymentInfo: { status: paymentMethod === "cod" ? "pending" : "pending" }
+      paymentInfo: { status: "pending" }
     });
 
     // ==========================
-    // COD FLOW: CONFIRM ORDER IMMEDIATELY
+    // COD FLOW
     // ==========================
     if (paymentMethod === "cod") {
-      // Reduce stock
       for (const item of items) {
         await Product.findByIdAndUpdate(item.product, {
           $inc: { stock: -item.quantity, sold: item.quantity }
         });
       }
 
-      // Clear cart for logged-in users
       if (userId) {
         await Cart.findOneAndDelete({ user: userId });
       }
@@ -50,24 +48,101 @@ export const createOrder = async (req, res) => {
       return res.status(201).json({
         success: true,
         cod: true,
-        message: "Order placed successfully with Cash on Delivery",
         orderId: order._id,
       });
     }
 
     // ==========================
-    // ONLINE PAYMENT FLOW → REQUIRE PAYMENT INITIATION
+    // RAZORPAY FLOW
     // ==========================
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalAmount * 100, // paisa
+      currency: "INR",
+      receipt: order._id.toString(),
+    });
+
+    // Save payment entry
+    await Payment.create({
+      orderId: order._id,
+      razorpayOrderId: razorpayOrder.id, // rename later if needed
+      amount: totalAmount,
+      status: "pending",
+    });
+
     return res.status(201).json({
       success: true,
       cod: false,
-      message: "Order created, proceed to payment",
-      orderId: order._id
+      orderId: order._id,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      key: process.env.RAZORPAY_KEY_ID,
     });
 
   } catch (error) {
-    console.error("Create Order Error:", error);
-    res.status(500).json({ success: false, message: "Server Error", error });
+    console.log(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
+
+    // Update payment
+    const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+
+if (!payment) {
+  return res.status(404).json({ success: false });
+}
+
+payment.status = "success";
+payment.razorpayPaymentId = razorpay_payment_id;
+await payment.save();
+
+    // Update order
+    const order = await Order.findById(orderId);
+
+    if (order.paymentInfo.status === "paid") {
+      return res.json({ success: true });
+    }
+
+    order.paymentInfo = {
+      transactionId: razorpay_payment_id,
+      status: "paid",
+    };
+
+    order.orderStatus = "confirmed";
+
+    await order.save();
+
+    // Reduce stock
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity, sold: item.quantity }
+      });
+    }
+
+    return res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 

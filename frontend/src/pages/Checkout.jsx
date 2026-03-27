@@ -44,7 +44,7 @@ export default function Checkout() {
 
   // --- payment / shipping / coupon ---
   const [shippingOption, setShippingOption] = useState("free");
-  const [paymentMethod, setPaymentMethod] = useState("easybuzz");
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [couponCode, setCouponCode] = useState("");
   const [couponApplying, setCouponApplying] = useState(false);
   const [couponMessage, setCouponMessage] = useState(null);
@@ -205,6 +205,16 @@ export default function Checkout() {
   };
 
 
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   
 
   // ==========================
@@ -269,7 +279,66 @@ const handlePlaceOrder = async () => {
       if (paymentMethod === "cod") {
         navigate(`/order-confirmed/${orderId}`);
       } else {
-        navigate(`/confirmation?order=${orderId}`);
+        
+        if (!window.Razorpay) {
+          alert("Payment system failed to load. Please refresh.");
+          return;
+        }
+
+  
+
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY,
+          amount: res.data.amount,
+          currency: "INR",
+          name: "Raadii ",
+          description: "Order Payment",
+          order_id: res.data.razorpayOrderId,
+        
+          handler: async function (response) {
+            try {
+              await axios.post(
+                "https://raadi-jdun.onrender.com/api/v1/order/payment/verify",
+                {
+                  ...response,
+                  orderId
+                },
+                { withCredentials: true }
+              );
+        
+              navigate(`/order-confirmed/${orderId}`);
+            } catch (err) {
+              alert("Payment verification failed");
+            }
+          },
+        
+          modal: {
+            ondismiss: function () {
+              console.log("User closed payment popup");
+            }
+          },
+        
+          prefill: {
+            name: customerDetails.name,
+            email: customerDetails.email,
+            contact: customerDetails.phone,
+          },
+        
+          theme: {
+            color: "#000"
+          }
+        };
+
+        
+        
+        const paymentObject = new window.Razorpay(options);
+        
+        paymentObject.on("payment.failed", function () {
+          alert("Payment failed. Please try again.");
+          navigate(`/retry-payment/${orderId}`);
+        });
+        
+        paymentObject.open();
       }
     }
   } catch (err) {
@@ -298,6 +367,16 @@ const handlePlaceOrder = async () => {
   }
 };
 
+useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  script.async = true;
+  document.body.appendChild(script);
+}, []);
+
+useEffect(() => {
+  fetchPricingConfig();
+}, []);
 
   // ==========================
   // Loading
@@ -613,7 +692,7 @@ const handlePlaceOrder = async () => {
               <div className="space-y-3">
                 <label
                   className={`flex items-center gap-4 p-4 rounded-lg border bg-white cursor-pointer ${
-                    paymentMethod === "easybuzz"
+                    paymentMethod === "razorpay"
                       ? "border-orange-300 ring-1 ring-orange-200"
                       : "border-gray-200"
                   }`}
@@ -621,15 +700,15 @@ const handlePlaceOrder = async () => {
                   <input
                     type="radio"
                     name="payment"
-                    checked={paymentMethod === "easybuzz"}
-                    onChange={() => setPaymentMethod("easybuzz")}
+                    checked={paymentMethod === "razorpay"}
+                    onChange={() => setPaymentMethod("razorpay")}
                   />
                   <div>
                     <div className="font-semibold text-sm md:text-base">
-                      Easybuzz payments
+                      Razorpay payments
                     </div>
                     <div className="text-xs md:text-sm text-gray-600">
-                      Secure online payment powered by Easybuzz
+                      Secure online payment powered by Razorpay
                     </div>
                   </div>
                 </label>

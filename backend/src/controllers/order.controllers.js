@@ -79,8 +79,11 @@ export const createOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false });
+    console.log("CREATE ORDER ERROR:", error?.error || error);
+    res.status(500).json({
+      success: false,
+      message: error?.error?.description || error.message
+    });
   }
 };
 

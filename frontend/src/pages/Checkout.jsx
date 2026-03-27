@@ -288,7 +288,7 @@ const handlePlaceOrder = async () => {
   
 
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY,
+          key: rzp_live_RvghTQaGGOUYT,
           amount: res.data.amount,
           currency: "INR",
           name: "Raadii ",

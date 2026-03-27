@@ -44,7 +44,7 @@ export default function BestSeller() {
   const fetchWishlist = async () => {
     try {
       const res = await axios.get(
-        "https://raadi.onrender.com/api/v1/wishlist",
+        "https://raadi-jdun.onrender.com/api/v1/wishlist",
         { withCredentials: true }
       );
       setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
@@ -56,7 +56,7 @@ export default function BestSeller() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("https://raadi.onrender.com/api/v1/cart", {
+      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/cart", {
         withCredentials: true,
       });
       const map = {};
@@ -74,7 +74,7 @@ export default function BestSeller() {
   const handleWishlist = useCallback(async (productId) => {
     try {
       const res = await axios.post(
-        "https://raadi.onrender.com/api/v1/wishlist/add",
+        "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
         { productId },
         { withCredentials: true }
       );
@@ -97,7 +97,7 @@ export default function BestSeller() {
   const handleAddToCart = useCallback(async (productId) => {
     try {
       const res = await axios.post(
-        "https://raadi.onrender.com/api/v1/cart/add",
+        "https://raadi-jdun.onrender.com/api/v1/cart/add",
         { productId, quantity: 1 },
         { withCredentials: true }
       );
@@ -122,7 +122,7 @@ export default function BestSeller() {
       if (qty <= 0) return removeItem(productId);
 
       const res = await axios.put(
-        "https://raadi.onrender.com/api/v1/cart/update",
+        "https://raadi-jdun.onrender.com/api/v1/cart/update",
         { productId, quantity: qty },
         { withCredentials: true }
       );
@@ -145,7 +145,7 @@ export default function BestSeller() {
   const removeItem = async (productId) => {
     try {
       const res = await axios.delete(
-        "https://raadi.onrender.com/api/v1/cart/remove",
+        "https://raadi-jdun.onrender.com/api/v1/cart/remove",
         {
           data: { productId },
           withCredentials: true,

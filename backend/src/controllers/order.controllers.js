@@ -51,7 +51,7 @@ export const createOrder = async (req, res) => {
         orderId: order._id,
       });
     }
-
+    console.log("RAZORPAY KEY:", process.env.RAZORPAY_KEY_ID);
     // ==========================
     // RAZORPAY FLOW
     // ==========================
@@ -61,10 +61,11 @@ export const createOrder = async (req, res) => {
         currency: "INR",
         receipt: order._id.toString(),
       });
+
       console.log("Razorpay Order:", razorpayOrder);
     } catch (error) {
-        console.error("RAZORPAY ERROR FULL:", err);
-        throw err;
+        console.error("RAZORPAY ERROR FULL:", error);
+        throw error;
     }
     
 

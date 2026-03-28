@@ -55,11 +55,18 @@ export const createOrder = async (req, res) => {
     // ==========================
     // RAZORPAY FLOW
     // ==========================
-    const razorpayOrder = await razorpay.orders.create({
-      amount: totalAmount * 100, // paisa
-      currency: "INR",
-      receipt: order._id.toString(),
-    });
+    try {
+      const razorpayOrder = await razorpay.orders.create({
+        amount: totalAmount * 100, // paisa
+        currency: "INR",
+        receipt: order._id.toString(),
+      });
+      console.log("Razorpay Order:", razorpayOrder);
+    } catch (error) {
+        console.error("RAZORPAY ERROR FULL:", err);
+        throw err;
+    }
+    
 
     // Save payment entry
     await Payment.create({

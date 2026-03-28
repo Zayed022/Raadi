@@ -95,7 +95,7 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/return-policy" className="hover:text-orange-500 transition">
+              <Link to="/refund-policy" className="hover:text-orange-500 transition">
                 Return & Refund
               </Link>
             </li>
@@ -105,7 +105,7 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/shipping" className="hover:text-orange-500 transition">
+              <Link to="/shipping-policy" className="hover:text-orange-500 transition">
                 Shipping Methods
               </Link>
             </li>

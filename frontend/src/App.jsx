@@ -30,7 +30,7 @@ function App() {
         <Route path="/" element={<Home />} />
          <Route path="/about" element={<About />} />
          <Route path="/shop" element={<Shop />} />
-         <Route path="/contact" element={<Contact />} />
+         <Route path="/contact-us" element={<Contact />} />
          <Route path="/wishlist" element={<Wishlist />} />
          <Route path="/login" element={<Login />} />
          <Route path="/cart" element={<Cart />} />
@@ -42,8 +42,8 @@ function App() {
          <Route path="/my-orders" element={<MyOrders />} />
          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
          <Route path="/terms" element={<Terms />} />
-         <Route path="/return-policy" element={<RefundPolicy />} />
-         <Route path="/shipping" element={<ShippingPolicy />} />
+         <Route path="/refund-policy" element={<RefundPolicy />} />
+         <Route path="/shipping-policy" element={<ShippingPolicy />} />
 
 
          <Route 

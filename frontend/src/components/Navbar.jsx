@@ -94,7 +94,7 @@ export default function Navbar() {
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Shop", path: "/shop" },
-    { name: "Contact", path: "/contact" },
+    { name: "Contact", path: "/contact-us" },
     { name: "My Orders", path: "/my-orders" },
   ];
 

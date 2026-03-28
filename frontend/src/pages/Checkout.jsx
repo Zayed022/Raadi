@@ -288,7 +288,7 @@ const handlePlaceOrder = async () => {
   
 
         const options = {
-          key: rzp_live_RvghTQaGGOUYT,
+          key: "rzp_live_RvghTQaGGOUYT",
           amount: res.data.amount,
           currency: "INR",
           name: "Raadii ",

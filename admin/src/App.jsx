@@ -20,6 +20,8 @@ import AdminPromoCards from './components/PromoCard/PromoCard'
 import AdminPromoCodes from './components/PromoCode/PromoCode'
 import AdminSpecialProduct from './components/SpecialProduct/SpecialProduct'
 import AdminVideoSection from './components/VideoComponent/VideoAdmin'
+import PrivateRoute from './components/PrivateRoute'
+import Login from './pages/Login'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -28,24 +30,29 @@ function App() {
     <>
      <Routes>
 
-      <Route path="/" element={<Home />} />
-      <Route path="/products" element={<Products />} />
-      <Route path="/products/add" element={<ProductAdd />} />
-      <Route path="/products/manage" element={<ProductManager />} />
-      <Route path="/products/bestSeller" element={<AdminBestSellers />} />
-       <Route path="/products/feature" element={<AdminFeaturedProducts />} />
-      <Route path="/about/banners" element={<AdminAboutBanner />} />
-      <Route path="/about/intro" element={<AdminAboutIntro />} />
-      <Route path="/admin/categories" element={<AdminCategories />} />
-      <Route path="/gallery" element={<AdminGallery />} />
-      <Route path="/home/banners" element={<AdminHomeBanner />} />
-      <Route path="/orders" element={<AdminOrders />} />
-      <Route path="/pricing" element={<AdminPricingConfig />} />
-      <Route path="/card" element={<AdminPromoCards />} />
-      <Route path="/code" element={<AdminPromoCodes />} />
-      <Route path="/special" element={<AdminSpecialProduct />} />
-      <Route path="/video" element={<AdminVideoSection />} />
-     </Routes>
+{/* PUBLIC */}
+<Route path="/login" element={<Login />} />
+
+{/* PROTECTED */}
+<Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+<Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
+<Route path="/products/add" element={<PrivateRoute><ProductAdd /></PrivateRoute>} />
+<Route path="/products/manage" element={<PrivateRoute><ProductManager /></PrivateRoute>} />
+<Route path="/products/bestSeller" element={<PrivateRoute><AdminBestSellers /></PrivateRoute>} />
+<Route path="/products/feature" element={<PrivateRoute><AdminFeaturedProducts /></PrivateRoute>} />
+<Route path="/about/banners" element={<PrivateRoute><AdminAboutBanner /></PrivateRoute>} />
+<Route path="/about/intro" element={<PrivateRoute><AdminAboutIntro /></PrivateRoute>} />
+<Route path="/admin/categories" element={<PrivateRoute><AdminCategories /></PrivateRoute>} />
+<Route path="/gallery" element={<PrivateRoute><AdminGallery /></PrivateRoute>} />
+<Route path="/home/banners" element={<PrivateRoute><AdminHomeBanner /></PrivateRoute>} />
+<Route path="/orders" element={<PrivateRoute><AdminOrders /></PrivateRoute>} />
+<Route path="/pricing" element={<PrivateRoute><AdminPricingConfig /></PrivateRoute>} />
+<Route path="/card" element={<PrivateRoute><AdminPromoCards /></PrivateRoute>} />
+<Route path="/code" element={<PrivateRoute><AdminPromoCodes /></PrivateRoute>} />
+<Route path="/special" element={<PrivateRoute><AdminSpecialProduct /></PrivateRoute>} />
+<Route path="/video" element={<PrivateRoute><AdminVideoSection /></PrivateRoute>} />
+
+</Routes>
     </>
   )
 }

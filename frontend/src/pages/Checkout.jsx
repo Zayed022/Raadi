@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { useCart } from "../context/CartContext";
 
 function formatCurrency(n) {
   if (!n && n !== 0) return "₹0.00";
@@ -17,7 +18,7 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   // --- cart data ---
-  const [cart, setCart] = useState({ items: [] });
+  const { cart } = useCart();
 
   // --- user / contact info ---
   const [email, setEmail] = useState("");
@@ -58,72 +59,14 @@ export default function Checkout() {
   const [shipping, setShipping] = useState(0);
   
 
-  // ==========================
-  // Initial fetch: cart + profile
-  // ==========================
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const [cartRes, profileRes] = await Promise.all([
-          axios.get("https://raadi-jdun.onrender.com/api/v1/cart", {
-            withCredentials: true,
-          }),
-          axios.get("https://raadi-jdun.onrender.com/api/v1/users/profile", {
-            withCredentials: true,
-          }),
-        ]);
-
-        if (!mounted) return;
-
-        // cart
-        setCart(cartRes.data.cart || { items: [] });
-
-        // profile -> email + first saved address (if any)
-        const user = profileRes.data.user;
-        if (user?.email) setEmail(user.email);
-
-        if (Array.isArray(user?.addresses) && user.addresses.length > 0) {
-          const a = user.addresses[0];
-          setFirstName(a.firstName || "");
-          setLastName(a.lastName || "");
-          setAddress(a.address || "");
-          setApartment(a.apartment || "");
-          setCity(a.city || "");
-          setStateField(a.state || "");
-          setPincode(a.pincode || "");
-          setPhone(a.phone || "");
-        }
-
-        setError(null);
-      } catch (err) {
-        console.error("Checkout fetch error:", err);
-        if (err.response?.status === 401) {
-          navigate("/login");
-        } else {
-          setError("Could not load checkout details. Please try again.");
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    fetchAll();
-
-    return () => {
-      mounted = false;
-    };
-  }, [navigate]);
+  
 
   // ==========================
   // Derived totals
   // ==========================
   const subtotal = useMemo(() => {
-    return (cart.items || []).reduce(
-      (s, it) =>
-        s + ((it.product?.price || 0) * (it.quantity || 0)),
+    return (cart || []).reduce(
+      (s, it) => s + (it.price * it.quantity),
       0
     );
   }, [cart]);
@@ -207,10 +150,14 @@ export default function Checkout() {
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+  
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
+  
       document.body.appendChild(script);
     });
   };
@@ -237,10 +184,10 @@ const handlePlaceOrder = async () => {
     landmark: apartment || "",
   };
 
-  const items = cart.items.map(it => ({
-    product: it.product._id,
+  const items = cart.map(it => ({
+    product: it._id,
     quantity: it.quantity,
-    price: it.product.price
+    price: it.price
   }));
 
   const customerDetails = {
@@ -270,7 +217,7 @@ const handlePlaceOrder = async () => {
     const res = await axios.post(
       "https://raadi-jdun.onrender.com/api/v1/order/create",
       body,
-      { withCredentials: true }
+      
     );
 
     if (res.data.success) {
@@ -280,65 +227,53 @@ const handlePlaceOrder = async () => {
         navigate(`/order-confirmed/${orderId}`);
       } else {
         
-        if (!window.Razorpay) {
-          alert("Payment system failed to load. Please refresh.");
-          return;
+        const loaded = await loadRazorpay();
+
+if (!loaded) {
+  alert("Razorpay failed to load");
+  return;
+}
+
+const options = {
+  key: res.data.key,
+  amount: res.data.amount,
+  currency: "INR",
+  name: "Raadii",
+  description: "Order Payment",
+  order_id: res.data.razorpayOrderId,
+
+  handler: async function (response) {
+    try {
+      await axios.post(
+        "https://raadi-jdun.onrender.com/api/v1/order/payment/verify",
+        {
+          ...response,
+          orderId,
         }
+      );
 
-  
+      navigate(`/order-confirmed/${orderId}`);
+    } catch {
+      alert("Payment verification failed");
+    }
+  },
 
-        const options = {
-          key: "rzp_live_RvghTQaGGOUYT",
-          amount: res.data.amount,
-          currency: "INR",
-          name: "Raadii ",
-          description: "Order Payment",
-          order_id: res.data.razorpayOrderId,
-        
-          handler: async function (response) {
-            try {
-              await axios.post(
-                "https://raadi-jdun.onrender.com/api/v1/order/payment/verify",
-                {
-                  ...response,
-                  orderId
-                },
-                { withCredentials: true }
-              );
-        
-              navigate(`/order-confirmed/${orderId}`);
-            } catch (err) {
-              alert("Payment verification failed");
-            }
-          },
-        
-          modal: {
-            ondismiss: function () {
-              console.log("User closed payment popup");
-            }
-          },
-        
-          prefill: {
-            name: customerDetails.name,
-            email: customerDetails.email,
-            contact: customerDetails.phone,
-          },
-        
-          theme: {
-            color: "#000"
-          }
-        };
+  prefill: {
+    name: customerDetails.name,
+    email: customerDetails.email,
+    contact: customerDetails.phone,
+  },
 
-        
-        
-        const paymentObject = new window.Razorpay(options);
-        
-        paymentObject.on("payment.failed", function () {
-          alert("Payment failed. Please try again.");
-          navigate(`/retry-payment/${orderId}`);
-        });
-        
-        paymentObject.open();
+  theme: { color: "#000" },
+};
+
+const paymentObject = new window.Razorpay(options);
+
+paymentObject.on("payment.failed", function () {
+  alert("Payment failed. Please try again.");
+});
+
+paymentObject.open();
       }
     }
   } catch (err) {
@@ -376,6 +311,10 @@ useEffect(() => {
 
 useEffect(() => {
   fetchPricingConfig();
+}, []);
+
+useEffect(() => {
+  setLoading(false);
 }, []);
 
   // ==========================
@@ -802,28 +741,28 @@ useEffect(() => {
               <div className="space-y-4">
                 {(cart.items || []).map((it) => (
                   <div
-                    key={it.product?._id}
+                    key={it._id}
                     className="flex items-center gap-4"
                   >
                     <div className="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
                       <img
-                        src={it.product?.images?.[0]}
-                        alt={it.product?.name}
+                        src={it.images?.[0]}
+                        alt={it.name}
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-gray-900">
-                        {it.product?.name}
+                        {it.name}
                       </div>
                       <div className="text-xs text-gray-500">
                         {it.quantity} ×{" "}
-                        {formatCurrency(it.product?.price)}
+                        {formatCurrency(it.price)}
                       </div>
                     </div>
                     <div className="text-sm font-semibold">
                       {formatCurrency(
-                        (it.product?.price || 0) *
+                        (it.price || 0) *
                           (it.quantity || 0)
                       )}
                     </div>

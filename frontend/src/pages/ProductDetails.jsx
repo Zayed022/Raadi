@@ -159,37 +159,53 @@ const { toggleWishlist, isInWishlist } = useWishlist();
   /* -------------------- Reviews submit -------------------- */
 
   const submitReview = async () => {
-  
     if (!newRating) return alert("Please select star rating");
-
+  
     setSubmittingReview(true);
-
-    // optimistic local push
+  
+    const guestName = "Guest User"; // or take from input later
+    const guestEmail = "guest@example.com";
+  
+    // ✅ optimistic update
     const optimistic = {
       _id: `local-${Date.now()}`,
-      user: { name: "You" },
+      name: guestName,
       rating: newRating,
       comment,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
+  
     setReviews((r) => [optimistic, ...r]);
-    // recalc average locally
+  
     const updatedList = [optimistic, ...reviews];
-    const avg = updatedList.reduce((s, it) => s + it.rating, 0) / updatedList.length;
+    const avg =
+      updatedList.reduce((s, it) => s + it.rating, 0) /
+      updatedList.length;
+  
     setAvgRating(avg);
+  
     const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    updatedList.forEach((it) => { if (breakdown[it.rating] !== undefined) breakdown[it.rating]++; });
+    updatedList.forEach((it) => {
+      if (breakdown[it.rating] !== undefined) breakdown[it.rating]++;
+    });
     setRatingBreakdown(breakdown);
-
+  
     try {
-      await axios.post(`${API_BASE}/review/add`, { productId: id, rating: newRating, comment }, { withCredentials: true });
-      // refresh canonical list
+      await axios.post(`${API_BASE}/review/add`, {
+        productId: id,
+        name: guestName,      // ✅ REQUIRED
+        email: guestEmail,    // ✅ OPTIONAL but recommended
+        rating: newRating,
+        comment,
+      });
+  
       await fetchReviews();
+  
       setNewRating(0);
       setComment("");
     } catch (err) {
       console.error("Submit review error:", err);
-      // refresh to canonical state if failed
+  
       await fetchReviews();
       alert("Could not submit review. Please try again.");
     } finally {
@@ -385,7 +401,7 @@ product?.discount ??
 
             <div className="md:w-1/4">
               <h3 className="text-lg font-semibold mb-2">Write a review</h3>
-               (
+               
                 <>
                   <div className="flex gap-2 mb-3 text-2xl">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -416,7 +432,7 @@ product?.discount ??
                     {submittingReview ? "Submitting..." : "Submit"}
                   </button>
                 </>
-              )
+              
             </div>
           </div>
 

@@ -13,13 +13,23 @@ import crypto from "crypto";
 
 export const createOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, customerDetails, totalAmount, paymentMethod } = req.body;
+    const {
+      items,
+      shippingAddress,
+      customerDetails,
+      totalAmount,
+      paymentMethod,
+    } = req.body;
 
     if (!items || items.length === 0) {
-      return res.status(400).json({ success: false, message: "No items provided" });
+      return res.status(400).json({
+        success: false,
+        message: "No items provided",
+      });
     }
 
-    const userId = req.user?._id || null;
+    // ❌ No user now
+    const userId = null;
 
     const order = await Order.create({
       user: userId,
@@ -28,7 +38,7 @@ export const createOrder = async (req, res) => {
       shippingAddress,
       totalAmount,
       orderStatus: paymentMethod === "cod" ? "confirmed" : "pending",
-      paymentInfo: { status: "pending" }
+      paymentInfo: { status: "pending" },
     });
 
     // ==========================
@@ -37,12 +47,11 @@ export const createOrder = async (req, res) => {
     if (paymentMethod === "cod") {
       for (const item of items) {
         await Product.findByIdAndUpdate(item.product, {
-          $inc: { stock: -item.quantity, sold: item.quantity }
+          $inc: {
+            stock: -item.quantity,
+            sold: item.quantity,
+          },
         });
-      }
-
-      if (userId) {
-        await Cart.findOneAndDelete({ user: userId });
       }
 
       return res.status(201).json({
@@ -51,28 +60,27 @@ export const createOrder = async (req, res) => {
         orderId: order._id,
       });
     }
-    console.log("RAZORPAY KEY:", process.env.RAZORPAY_KEY_ID);
+
     // ==========================
     // RAZORPAY FLOW
     // ==========================
+    let razorpayOrder;
+
     try {
-      const razorpayOrder = await razorpay.orders.create({
-        amount: totalAmount * 100, // paisa
+      razorpayOrder = await razorpay.orders.create({
+        amount: totalAmount * 100,
         currency: "INR",
         receipt: order._id.toString(),
       });
-
-      console.log("Razorpay Order:", razorpayOrder);
     } catch (error) {
-        console.error("RAZORPAY ERROR FULL:", error);
-        throw error;
+      console.error("RAZORPAY ERROR:", error);
+      throw error;
     }
-    
 
-    // Save payment entry
+    // ✅ Save payment properly
     await Payment.create({
       orderId: order._id,
-      razorpayOrderId: razorpayOrder.id, // rename later if needed
+      razorpayOrderId: razorpayOrder.id,
       amount: totalAmount,
       status: "pending",
     });
@@ -85,12 +93,11 @@ export const createOrder = async (req, res) => {
       amount: razorpayOrder.amount,
       key: process.env.RAZORPAY_KEY_ID,
     });
-
   } catch (error) {
-    console.log("CREATE ORDER ERROR:", error?.error || error);
+    console.log("CREATE ORDER ERROR:", error);
     res.status(500).json({
       success: false,
-      message: error?.error?.description || error.message
+      message: error?.message || "Server Error",
     });
   }
 };
@@ -101,32 +108,35 @@ export const verifyPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      orderId
+      orderId,
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
+      .update(body)
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Invalid signature" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
     }
 
-    // Update payment
-    const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+    const payment = await Payment.findOne({
+      razorpayOrderId: razorpay_order_id,
+    });
 
-if (!payment) {
-  return res.status(404).json({ success: false });
-}
+    if (!payment) {
+      return res.status(404).json({ success: false });
+    }
 
-payment.status = "success";
-payment.razorpayPaymentId = razorpay_payment_id;
-await payment.save();
+    payment.status = "success";
+    payment.razorpayPaymentId = razorpay_payment_id;
+    await payment.save();
 
-    // Update order
     const order = await Order.findById(orderId);
 
     if (order.paymentInfo.status === "paid") {
@@ -142,17 +152,19 @@ await payment.save();
 
     await order.save();
 
-    // Reduce stock
+    // ✅ Reduce stock
     for (const item of order.items) {
       await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity, sold: item.quantity }
+        $inc: {
+          stock: -item.quantity,
+          sold: item.quantity,
+        },
       });
     }
 
     return res.json({ success: true });
-
   } catch (err) {
-    console.error(err);
+    console.error("VERIFY ERROR:", err);
     res.status(500).json({ success: false });
   }
 };

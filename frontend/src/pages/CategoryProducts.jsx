@@ -5,6 +5,9 @@ import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import SEO from "../components/SEO";
 
+// ✅ CONTEXT
+import { useWishlist } from "../context/WishlistContext";
+
 const CATEGORY_SEO = {
   perfumes: {
     title: "Luxury Perfumes in India | Long Lasting Fragrances – Raadi",
@@ -36,23 +39,23 @@ export default function CategoryProducts() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [wishlist, setWishlist] = useState([]);
+
+  // ✅ CONTEXT
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     if (!category) return;
-  
     fetchProducts();
-    fetchWishlist();
   }, [category]);
-  
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
-  
+
       const res = await axios.get(
         `https://raadi-jdun.onrender.com/api/v1/products/category/${encodeURIComponent(category)}`
       );
-  
+
       setProducts(
         (res.data.products || []).sort((a, b) =>
           a.name.localeCompare(b.name, "en", { sensitivity: "base" })
@@ -62,39 +65,6 @@ export default function CategoryProducts() {
       console.log("Category products fetch error:", err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist",
-        { withCredentials: true }
-      );
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch (err) {
-      console.log("Wishlist Fetch Error:", err);
-    }
-  };
-
-  const toggleWishlist = async (productId) => {
-    try {
-      if (wishlist.includes(productId)) {
-        await axios.delete(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
-          { data: { productId }, withCredentials: true }
-        );
-        setWishlist((prev) => prev.filter((id) => id !== productId));
-      } else {
-        await axios.post(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
-          { productId },
-          { withCredentials: true }
-        );
-        setWishlist((prev) => [...prev, productId]);
-      }
-    } catch (err) {
-      if (err.response?.status === 401) navigate("/");
     }
   };
 
@@ -111,7 +81,6 @@ export default function CategoryProducts() {
 
   return (
     <>
-      {/* 🔥 Dynamic SEO */}
       <SEO
         title={seo.title}
         description={seo.description}
@@ -119,17 +88,14 @@ export default function CategoryProducts() {
       />
 
       <section className="max-w-7xl mx-auto px-6 py-14">
-        {/* H1 (Ranking Critical) */}
         <h1 className="text-4xl font-bold text-gray-900 text-center mb-6 capitalize">
           {category} by Raadi
         </h1>
 
-        {/* Category Intro Content (SEO GOLD) */}
         <p className="max-w-3xl mx-auto text-center text-gray-600 mb-12">
           {seo.intro}
         </p>
 
-        {/* LOADING */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {Array(8)
@@ -158,14 +124,15 @@ export default function CategoryProducts() {
                     className="w-full h-full object-contain"
                   />
 
+                  {/* ❤️ Wishlist */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleWishlist(p._id);
+                      toggleWishlist(p); // ✅ UPDATED
                     }}
                     className="absolute top-4 right-4"
                   >
-                    {wishlist.includes(p._id) ? (
+                    {isInWishlist(p._id) ? ( // ✅ UPDATED
                       <FaHeart size={26} className="text-orange-600" />
                     ) : (
                       <FiHeart size={26} className="text-gray-600 hover:text-orange-500" />
@@ -181,7 +148,6 @@ export default function CategoryProducts() {
           </div>
         )}
 
-        {/* Internal Linking Block */}
         <section className="mt-16 text-center">
           <h2 className="text-2xl font-semibold mb-4">
             Explore More from Raadi

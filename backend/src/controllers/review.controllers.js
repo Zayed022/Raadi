@@ -6,55 +6,66 @@ import Product from "../models/product.models.js";
 // ===========================
 export const addReview = async (req, res) => {
   try {
-    const { productId, rating, comment } = req.body;
+    const { productId, rating, comment, name, email } = req.body;
 
-    if (!rating) {
-      return res.status(400).json({ success: false, message: "Rating is required" });
-    }
-
-    const userId = req.user._id;
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
-    // Check if review exists by this user
-    let review = await Review.findOne({ product: productId, user: userId });
-
-    if (review) {
-      // Update review
-      review.rating = rating;
-      review.comment = comment;
-      await review.save();
-    } else {
-      // Create new review
-      review = await Review.create({
-        product: productId,
-        user: userId,
-        rating,
-        comment
+    if (!rating || !name) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and rating are required",
       });
     }
 
-    // Recalculate average rating
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // ✅ Find existing review by email (or name fallback)
+    let review = await Review.findOne({
+      product: productId,
+      email,
+    });
+
+    if (review) {
+      review.rating = rating;
+      review.comment = comment;
+      review.name = name;
+      await review.save();
+    } else {
+      review = await Review.create({
+        product: productId,
+        name,
+        email,
+        rating,
+        comment,
+      });
+    }
+
+    // 🔁 Recalculate rating
     const reviews = await Review.find({ product: productId });
+
     const avgRating =
       reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
 
     product.ratings = avgRating;
     product.numReviews = reviews.length;
+
     await product.save();
 
     return res.status(200).json({
       success: true,
       message: "Review added/updated successfully",
-      review
+      review,
     });
-
   } catch (error) {
     console.error("Add Review Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 
@@ -66,17 +77,20 @@ export const getReviews = async (req, res) => {
     const { productId } = req.params;
 
     const reviews = await Review.find({ product: productId })
-      .populate("user", "name email avatar")
+      // ❌ REMOVE populate("user")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
       count: reviews.length,
-      reviews
+      reviews,
     });
   } catch (error) {
     console.error("Get Reviews Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 

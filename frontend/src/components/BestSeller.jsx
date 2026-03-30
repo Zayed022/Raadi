@@ -4,30 +4,23 @@ import { FiHeart, FiMinus, FiPlus } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+// ✅ NEW
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+
 export default function BestSeller() {
   const [products, setProducts] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [cartQuantities, setCartQuantities] = useState({});
   const navigate = useNavigate();
 
-  // ------------------------------------------------------------
-  // SIMPLE LOGIN CHECK → REDIRECT IF NOT LOGGED IN
-  // ------------------------------------------------------------
-  const redirectIfNotLoggedIn = (err) => {
-    if (err?.response?.status === 401) {
-      navigate("/login");
-      return true;
-    }
-    return false;
-  };
+  // ✅ CONTEXT
+  const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   // ------------------------------------------------------------
-  // FETCH PRODUCTS / WISHLIST / CART
+  // FETCH PRODUCTS ONLY
   // ------------------------------------------------------------
   useEffect(() => {
     fetchProducts();
-    fetchWishlist();
-    fetchCart();
   }, []);
 
   const fetchProducts = async () => {
@@ -41,137 +34,18 @@ export default function BestSeller() {
     }
   };
 
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist",
-        { withCredentials: true }
-      );
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Wishlist Fetch Error:", err);
-    }
-  };
-
-  const fetchCart = async () => {
-    try {
-      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/cart", {
-        withCredentials: true,
-      });
-      const map = {};
-      res.data.cart?.items?.forEach((i) => (map[i.product._id] = i.quantity));
-      setCartQuantities(map);
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Cart Fetch Error:", err);
-    }
-  };
-
   // ------------------------------------------------------------
-  // WISHLIST HANDLER
+  // HELPERS (REPLACES OLD STATE)
   // ------------------------------------------------------------
-  const handleWishlist = useCallback(async (productId) => {
-    try {
-      const res = await axios.post(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
-        { productId },
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) {
-        navigate("/login");
-        return;
-      }
-
-      setWishlist((prev) => [...prev, productId]);
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Wishlist Error:", err);
-    }
-  }, []);
-
-  // ------------------------------------------------------------
-  // ADD TO CART
-  // ------------------------------------------------------------
-  const handleAddToCart = useCallback(async (productId) => {
-    try {
-      const res = await axios.post(
-        "https://raadi-jdun.onrender.com/api/v1/cart/add",
-        { productId, quantity: 1 },
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) {
-        navigate("/login");
-        return;
-      }
-
-      setCartQuantities((prev) => ({ ...prev, [productId]: 1 }));
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Add Cart Error:", err);
-    }
-  }, []);
-
-  // ------------------------------------------------------------
-  // UPDATE CART QUANTITY
-  // ------------------------------------------------------------
-  const updateQuantity = async (productId, qty) => {
-    try {
-      if (qty <= 0) return removeItem(productId);
-
-      const res = await axios.put(
-        "https://raadi-jdun.onrender.com/api/v1/cart/update",
-        { productId, quantity: qty },
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) {
-        navigate("/login");
-        return;
-      }
-
-      setCartQuantities((prev) => ({ ...prev, [productId]: qty }));
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Update Qty Error:", err);
-    }
-  };
-
-  // ------------------------------------------------------------
-  // REMOVE ITEM
-  // ------------------------------------------------------------
-  const removeItem = async (productId) => {
-    try {
-      const res = await axios.delete(
-        "https://raadi-jdun.onrender.com/api/v1/cart/remove",
-        {
-          data: { productId },
-          withCredentials: true,
-        }
-      );
-
-      if (!res.data.success) {
-        navigate("/login");
-        return;
-      }
-
-      setCartQuantities((prev) => {
-        const updated = { ...prev };
-        delete updated[productId];
-        return updated;
-      });
-    } catch (err) {
-      if (redirectIfNotLoggedIn(err)) return;
-      console.log("Remove Item Error:", err);
-    }
+  const getQty = (id) => {
+    const item = cart.find((i) => i._id === id);
+    return item ? item.quantity : 0;
   };
 
   const openProduct = (id) => navigate(`/product/${id}`);
 
   // ------------------------------------------------------------
-  // UI RENDER
+  // UI (UNCHANGED)
   // ------------------------------------------------------------
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-6 py-14">
@@ -182,10 +56,9 @@ export default function BestSeller() {
         Discover our most-loved products trusted by thousands.
       </p>
 
-      {/* Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
         {products.map((item) => {
-          const qty = cartQuantities[item._id] || 0;
+          const qty = getQty(item._id);
 
           return (
             <div
@@ -195,9 +68,9 @@ export default function BestSeller() {
               {/* Wishlist Button */}
               <button
                 className="absolute top-3 right-3 z-50"
-                onClick={() => handleWishlist(item._id)}
+                onClick={() => toggleWishlist(item)} // ✅ UPDATED
               >
-                {wishlist.includes(item._id) ? (
+                {isInWishlist(item._id) ? ( // ✅ UPDATED
                   <FaHeart className="text-orange-500" size={22} />
                 ) : (
                   <FiHeart
@@ -246,7 +119,7 @@ export default function BestSeller() {
                 <div className="flex justify-center items-center gap-3 mt-3">
                   <button
                     className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-                    onClick={() => updateQuantity(item._id, qty - 1)}
+                    onClick={() => updateQuantity(item._id, qty - 1)} // ✅ UPDATED
                   >
                     <FiMinus />
                   </button>
@@ -257,14 +130,14 @@ export default function BestSeller() {
 
                   <button
                     className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-                    onClick={() => updateQuantity(item._id, qty + 1)}
+                    onClick={() => updateQuantity(item._id, qty + 1)} // ✅ UPDATED
                   >
                     <FiPlus />
                   </button>
                 </div>
               ) : (
                 <button
-                  onClick={() => handleAddToCart(item._id)}
+                  onClick={() => addToCart(item)} // ✅ UPDATED
                   className="w-full mt-4 py-2 rounded-lg bg-orange-500 text-white text-base font-semibold hover:bg-orange-600 transition"
                 >
                   Add to Cart

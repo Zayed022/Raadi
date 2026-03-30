@@ -4,12 +4,18 @@ import './index.css'
 import App from './App.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { HelmetProvider } from "react-helmet-async";
+import { WishlistProvider } from './context/WishlistContext.jsx'
+import { CartProvider } from './context/CartContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
      
-    <App />
+    <CartProvider>
+      <WishlistProvider>
+        <App />
+      </WishlistProvider>
+    </CartProvider>
   </HelmetProvider>
   </StrictMode>,
 )

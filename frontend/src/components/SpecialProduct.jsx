@@ -1,42 +1,36 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 
+// ✅ CONTEXT
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+
 export default function SpecialProduct() {
   const [data, setData] = useState(null);
-  const [wishlist, setWishlist] = useState([]);
-  const [cartQty, setCartQty] = useState(0);
 
   const navigate = useNavigate();
 
-  // ------------------------------------------------------------
-  // LOGIN CHECK → redirect to login on 401
-  // ------------------------------------------------------------
-  
+  // ✅ CONTEXT
+  const { cart, addToCart, updateQuantity } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   // ------------------------------------------------------------
-  // Fetch special product + wishlist + cart in one go
+  // Fetch ONLY special product (unchanged)
   // ------------------------------------------------------------
   useEffect(() => {
     const loadSpecial = async () => {
       try {
         const res = await axios.get(
-          "https://raadi-jdun.onrender.com/api/v1/featuredProduct/active",
-          { withCredentials: true }
+          "https://raadi-jdun.onrender.com/api/v1/featuredProduct/active"
         );
 
         const special = res.data.special;
         if (!special || !special.productId) return;
 
         setData(special);
-
-        const pid = special.productId._id;
-
-        // Fetch wishlist & cart parallel
-        fetchWishlist();
-        fetchCart(pid);
       } catch (err) {
         console.log("Special fetch error:", err);
       }
@@ -46,130 +40,23 @@ export default function SpecialProduct() {
   }, []);
 
   // ------------------------------------------------------------
-  // Wishlist
+  // Helpers
   // ------------------------------------------------------------
-  const fetchWishlist = useCallback(async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist",
-        { withCredentials: true }
-      );
-
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch (err) {
-      if (checkLogin(err)) return;
-    }
-  }, []);
-
-  const toggleWishlist = useCallback(async () => {
-    const pid = data?.productId?._id;
-    if (!pid) return;
-
-    try {
-      if (wishlist.includes(pid)) {
-        const res = await axios.delete(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
-          {
-            data: { productId: pid },
-            withCredentials: true,
-          }
-        );
-
-        if (!res.data.success) return navigate("/login");
-
-        setWishlist((prev) => prev.filter((id) => id !== pid));
-      } else {
-        const res = await axios.post(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
-          { productId: pid },
-          { withCredentials: true }
-        );
-
-        if (!res.data.success) return navigate("/login");
-
-        setWishlist((prev) => [...prev, pid]);
-      }
-    } catch (err) {
-      if (checkLogin(err)) return;
-    }
-  }, [data, wishlist]);
-
-  // ------------------------------------------------------------
-  // Cart
-  // ------------------------------------------------------------
-  const fetchCart = useCallback(async (pid) => {
-    try {
-      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/cart", {
-        withCredentials: true,
-      });
-
-      const item = res.data.cart?.items?.find((i) => i.product._id === pid);
-      setCartQty(item ? item.quantity : 0);
-    } catch (err) {
-      if (checkLogin(err)) return;
-    }
-  }, []);
-
-  const addToCart = async () => {
-    const pid = data?.productId?._id;
-    if (!pid) return;
-
-    try {
-      const res = await axios.post(
-        "https://raadi-jdun.onrender.com/api/v1/cart/add",
-        { productId: pid, quantity: 1 },
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) return navigate("/login");
-
-      setCartQty(1);
-    } catch (err) {
-      if (checkLogin(err)) return;
-    }
-  };
-
-  const updateQuantity = async (newQty) => {
-    const pid = data?.productId?._id;
-    if (!pid) return;
-
-    try {
-      if (newQty <= 0) {
-        const res = await axios.delete(
-          "https://raadi-jdun.onrender.com/api/v1/cart/remove",
-          {
-            data: { productId: pid },
-            withCredentials: true,
-          }
-        );
-
-        if (!res.data.success) return navigate("/login");
-
-        return setCartQty(0);
-      }
-
-      const res = await axios.put(
-        "https://raadi-jdun.onrender.com/api/v1/cart/update",
-        { productId: pid, quantity: newQty },
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) return navigate("/login");
-
-      setCartQty(newQty);
-    } catch (err) {
-      if (checkLogin(err)) return;
-    }
+  const getQty = (id) => {
+    const item = cart.find((i) => i._id === id);
+    return item ? item.quantity : 0;
   };
 
   // ------------------------------------------------------------
-  // UI
+  // UI (UNCHANGED)
   // ------------------------------------------------------------
   if (!data || !data.productId) return null;
 
   const product = data.productId;
   const pid = product._id;
-  const isInWishlist = wishlist.includes(pid);
+
+  const qty = getQty(pid); // ✅ REPLACED
+  const isWishlisted = isInWishlist(pid); // ✅ REPLACED
 
   return (
     <section className="w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-20">
@@ -199,33 +86,33 @@ export default function SpecialProduct() {
             ₹{data.startingPrice.toLocaleString()}
           </p>
 
-          {/* Wishlist Button */}
+          {/* ❤️ Wishlist Button */}
           <button
-            onClick={toggleWishlist}
+            onClick={() => toggleWishlist(product)} // ✅ UPDATED
             className="flex items-center gap-3 text-lg hover:text-orange-400 transition"
           >
-            {isInWishlist ? (
+            {isWishlisted ? ( // ✅ UPDATED
               <FaHeart size={24} className="text-orange-400" />
             ) : (
               <FiHeart size={24} />
             )}
-            {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+            {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
           </button>
 
-          {/* Cart Controls */}
-          {cartQty > 0 ? (
+          {/* 🛒 Cart Controls */}
+          {qty > 0 ? ( // ✅ UPDATED
             <div className="flex items-center gap-5">
               <button
-                onClick={() => updateQuantity(cartQty - 1)}
+                onClick={() => updateQuantity(pid, qty - 1)} // ✅
                 className="text-2xl px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
               >
                 –
               </button>
 
-              <span className="text-xl font-semibold">{cartQty}</span>
+              <span className="text-xl font-semibold">{qty}</span>
 
               <button
-                onClick={() => updateQuantity(cartQty + 1)}
+                onClick={() => updateQuantity(pid, qty + 1)} // ✅
                 className="text-2xl px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
               >
                 +
@@ -233,7 +120,7 @@ export default function SpecialProduct() {
             </div>
           ) : (
             <button
-              onClick={addToCart}
+              onClick={() => addToCart(product)} // ✅ UPDATED
               className="px-10 py-3 bg-orange-500 rounded-md text-lg font-semibold hover:bg-orange-600 transition"
             >
               Add to Cart

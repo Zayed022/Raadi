@@ -5,6 +5,10 @@ import { FiHeart } from "react-icons/fi";
 import { IoFilter, IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
+// ✅ CONTEXT
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+
 // Stable debounce
 const debounce = (fn, delay) => {
   let timer;
@@ -19,8 +23,11 @@ export default function ShopProduct() {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState({});
+
+  // ❌ REMOVED: wishlist & cart states
+  // ✅ USING CONTEXT
+  const { cart, addToCart, updateQuantity } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [ratingFilter, setRatingFilter] = useState(null);
@@ -62,8 +69,6 @@ export default function ShopProduct() {
 
   useEffect(() => {
     fetchCategories();
-    fetchWishlist();
-    fetchCart();
   }, []);
 
   const fetchCategories = async () => {
@@ -73,79 +78,11 @@ export default function ShopProduct() {
     setCategories(res.data.categories);
   };
 
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist",
-        { withCredentials: true }
-      );
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch {}
-  };
+  // ---------------- HELPERS ----------------
 
-  const fetchCart = async () => {
-    try {
-      const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/cart",
-        { withCredentials: true }
-      );
-      const mapped = {};
-      res.data.cart?.items?.forEach((item) => {
-        mapped[item.product._id] = item.quantity;
-      });
-      setCart(mapped);
-    } catch {}
-  };
-
-  // ---------------- ACTIONS ----------------
-
-  const handleWishlist = async (productId) => {
-    if (wishlist.includes(productId)) {
-      await axios.delete(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
-        { data: { productId }, withCredentials: true }
-      );
-      setWishlist((prev) => prev.filter((id) => id !== productId));
-    } else {
-      await axios.post(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
-        { productId },
-        { withCredentials: true }
-      );
-      setWishlist((prev) => [...prev, productId]);
-    }
-  };
-
-  const addToCart = async (productId) => {
-    await axios.post(
-      "https://raadi-jdun.onrender.com/api/v1/cart/add",
-      { productId, quantity: 1 },
-      { withCredentials: true }
-    );
-    setCart((prev) => ({ ...prev, [productId]: 1 }));
-  };
-
-  const updateQuantity = async (productId, newQty) => {
-    if (newQty <= 0) {
-      await axios.delete(
-        "https://raadi-jdun.onrender.com/api/v1/cart/remove",
-        { data: { productId }, withCredentials: true }
-      );
-      setCart((prev) => {
-        const updated = { ...prev };
-        delete updated[productId];
-        return updated;
-      });
-      return;
-    }
-
-    await axios.put(
-      "https://raadi-jdun.onrender.com/api/v1/cart/update",
-      { productId, quantity: newQty },
-      { withCredentials: true }
-    );
-
-    setCart((prev) => ({ ...prev, [productId]: newQty }));
+  const getQty = (id) => {
+    const item = cart.find((i) => i._id === id);
+    return item ? item.quantity : 0;
   };
 
   const resetFilters = () => {
@@ -157,13 +94,12 @@ export default function ShopProduct() {
 
   const openProductDetails = (id) => navigate(`/product/${id}`);
 
-  // ---------------- FILTER CONTENT ----------------
+  // ---------------- FILTER CONTENT (UNCHANGED) ----------------
 
   const FilterContent = (
     <div className="p-6">
       <h2 className="font-semibold text-xl mb-6">Filters</h2>
 
-      {/* CATEGORY */}
       <h3 className="font-medium mb-3">Categories</h3>
 
       <label className="flex items-center gap-2 mb-2 text-sm">
@@ -188,7 +124,6 @@ export default function ShopProduct() {
         </label>
       ))}
 
-      {/* PRICE */}
       <h3 className="font-medium mt-6 mb-3">Price Range</h3>
       <input
         type="range"
@@ -202,7 +137,6 @@ export default function ShopProduct() {
         Up to ₹{priceRange[1]}
       </p>
 
-      {/* RATING */}
       <h3 className="font-medium mt-6 mb-3">Rating</h3>
       <div className="space-y-2">
         {[5, 4, 3, 2, 1].map((stars) => (
@@ -306,97 +240,99 @@ export default function ShopProduct() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-8">
-  {products.map((p) => {
-    // ✅ FIXED: Proper JS scope
-    const discount =
-      p.discount ??
-      (p.mrp && p.price
-        ? Math.round(((p.mrp - p.price) / p.mrp) * 100)
-        : 0);
+            {products.map((p) => {
+              const discount =
+                p.discount ??
+                (p.mrp && p.price
+                  ? Math.round(((p.mrp - p.price) / p.mrp) * 100)
+                  : 0);
 
-    return (
-      <div
-        key={p._id}
-        onClick={() => openProductDetails(p._id)}
-        className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
-      >
-        <div className="relative bg-[#f5f6f8] h-64 flex items-center justify-center p-6">
-          
-          {/* ✅ DISCOUNT BADGE */}
-          {discount > 0 && (
-            <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-md shadow-sm">
-              {discount}% off
-            </span>
-          )}
+              const qty = getQty(p._id);
 
-          <img
-            src={p.images[0]}
-            alt={p.name}
-            className="max-h-full object-contain group-hover:scale-105 transition"
-          />
+              return (
+                <div
+                  key={p._id}
+                  onClick={() => openProductDetails(p._id)}
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
+                >
+                  <div className="relative bg-[#f5f6f8] h-64 flex items-center justify-center p-6">
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleWishlist(p._id);
-            }}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-md"
-          >
-            {wishlist.includes(p._id) ? (
-              <FaHeart size={18} className="text-orange-500" />
-            ) : (
-              <FiHeart size={18} className="text-gray-600" />
-            )}
-          </button>
-        </div>
+                    {discount > 0 && (
+                      <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-md shadow-sm">
+                        {discount}% off
+                      </span>
+                    )}
 
-        <div className="flex flex-col flex-1 p-5">
-          <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px]">
-            {p.name}
-          </h3>
+                    <img
+                      src={p.images[0]}
+                      alt={p.name}
+                      className="max-h-full object-contain group-hover:scale-105 transition"
+                    />
 
-          <div className="mt-2 flex items-center gap-2">
-            {p.mrp && (
-              <span className="text-xs text-gray-400 line-through">
-                ₹{p.mrp}
-              </span>
-            )}
-            <span className="text-lg font-semibold text-gray-900">
-              ₹{p.price}
-            </span>
+                    {/* ❤️ Wishlist */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(p);
+                      }}
+                      className="absolute top-4 right-4 p-2 rounded-full bg-white shadow-md"
+                    >
+                      {isInWishlist(p._id) ? (
+                        <FaHeart size={18} className="text-orange-500" />
+                      ) : (
+                        <FiHeart size={18} className="text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col flex-1 p-5">
+                    <h3 className="text-sm font-medium text-gray-800 line-clamp-2 min-h-[40px]">
+                      {p.name}
+                    </h3>
+
+                    <div className="mt-2 flex items-center gap-2">
+                      {p.mrp && (
+                        <span className="text-xs text-gray-400 line-through">
+                          ₹{p.mrp}
+                        </span>
+                      )}
+                      <span className="text-lg font-semibold text-gray-900">
+                        ₹{p.price}
+                      </span>
+                    </div>
+
+                    <div className="mt-auto pt-4">
+                      {p.stock === 0 ? (
+                        <button disabled className="w-full py-2 bg-gray-200 text-gray-600 rounded-lg text-sm">
+                          Out of Stock
+                        </button>
+                      ) : qty > 0 ? (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center justify-between bg-orange-500 text-white rounded-lg px-4 py-2"
+                        >
+                          <button onClick={() => updateQuantity(p._id, qty - 1)}>–</button>
+                          <span>{qty}</span>
+                          <button onClick={() => updateQuantity(p._id, qty + 1)}>+</button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(p);
+                          }}
+                          className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition"
+                        >
+                          Add to Cart
+                        </button>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="mt-auto pt-4">
-            {p.stock === 0 ? (
-              <button disabled className="w-full py-2 bg-gray-200 text-gray-600 rounded-lg text-sm">
-                Out of Stock
-              </button>
-            ) : cart[p._id] ? (
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center justify-between bg-orange-500 text-white rounded-lg px-4 py-2"
-              >
-                <button onClick={() => updateQuantity(p._id, cart[p._id] - 1)}>–</button>
-                <span>{cart[p._id]}</span>
-                <button onClick={() => updateQuantity(p._id, cart[p._id] + 1)}>+</button>
-              </div>
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(p._id);
-                }}
-                className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition"
-              >
-                Add to Cart
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  })}
-</div>
 
         </div>
       </div>

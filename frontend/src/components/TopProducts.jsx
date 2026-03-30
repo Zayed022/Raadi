@@ -4,77 +4,38 @@ import { Heart } from "lucide-react";
 import { FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+// ✅ CONTEXT
+import { useWishlist } from "../context/WishlistContext";
+
 export default function TopProducts() {
   const [products, setProducts] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
+
+  // ✅ CONTEXT
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     axios
       .get("https://raadi-jdun.onrender.com/api/v1/products/top-products")
       .then((res) => setProducts(res.data.products))
       .catch((err) => console.log("Top product fetch error:", err));
-
-    fetchWishlist();
   }, []);
-
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/wishlist", {
-        withCredentials: true,
-      });
-
-      setWishlist(res.data.wishlist?.products?.map((p) => p._id) || []);
-    } catch (err) {
-      console.log("Wishlist fetch error:", err);
-    }
-  };
-
-  const handleWishlist = async (productId) => {
-    try {
-      if (wishlist.includes(productId)) {
-        const res = await axios.delete(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
-          {
-            data: { productId },
-            withCredentials: true,
-          }
-        );
-
-        if (res.data.success) {
-          setWishlist((prev) => prev.filter((id) => id !== productId));
-        }
-      } else {
-        const res = await axios.post(
-          "https://raadi-jdun.onrender.com/api/v1/wishlist/add",
-          { productId },
-          { withCredentials: true }
-        );
-
-        if (res.data.success) {
-          setWishlist((prev) => [...prev, productId]);
-        }
-      }
-    } catch (err) {
-      console.log("Wishlist Error:", err);
-    }
-  };
 
   const openProductDetails = (id) => navigate(`/product/${id}`);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center py-16 ">
-  <h2 className="text-[36px] md:text-[42px] font tracking-wide text-[#0b1b3f]">
-    Top Products
-  </h2>
+        <h2 className="text-[36px] md:text-[42px] font tracking-wide text-[#0b1b3f]">
+          Top Products
+        </h2>
 
-  <p className="mt-4 text-[20px] md:text-[22px] font-medium text-[#1c2b4a]">
-  Shop our newest arrivals and crowd favorites.
-  </p>
-</div>
+        <p className="mt-4 text-[20px] md:text-[22px] font-medium text-[#1c2b4a]">
+          Shop our newest arrivals and crowd favorites.
+        </p>
+      </div>
 
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {products.map((product) => (
           <div
             key={product._id}
@@ -99,12 +60,12 @@ export default function TopProducts() {
                 Open
               </button>
 
-              {/* Wishlist Button */}
+              {/* ❤️ Wishlist Button */}
               <button
-                onClick={() => handleWishlist(product._id)}
+                onClick={() => toggleWishlist(product)} // ✅ UPDATED
                 className="absolute top-4 right-4 z-50"
               >
-                {wishlist.includes(product._id) ? (
+                {isInWishlist(product._id) ? ( // ✅ UPDATED
                   <FaHeart size={30} className="text-orange-500" />
                 ) : (
                   <Heart
@@ -125,38 +86,40 @@ export default function TopProducts() {
 
             {/* Price Section */}
             <div className="flex items-center gap-3 mt-2">
-              <p className="line-through text-gray-400">₹{product.mrp?.toLocaleString("en-IN")}</p>
+              <p className="line-through text-gray-400">
+                ₹{product.mrp?.toLocaleString("en-IN")}
+              </p>
               <p className="text-xl font-bold text-[#0b1b3f]">
                 ₹{product.price?.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
         ))}
-        
       </div>
+
       <div className="flex justify-center mt-14">
-  <button
-    onClick={() => navigate("/shop")}
-    className="
-      bg-[#E6B174]
-      hover:bg-[#dca35e]
-      text-white
-      font-semibold
-      text-lg
-      px-16
-      py-4
-      rounded-xl
-      shadow-md
-      transition-all
-      duration-300
-      hover:shadow-lg
-      hover:-translate-y-0.5
-      active:translate-y-0
-    "
-  >
-    View All
-  </button>
-</div>
+        <button
+          onClick={() => navigate("/shop")}
+          className="
+            bg-[#E6B174]
+            hover:bg-[#dca35e]
+            text-white
+            font-semibold
+            text-lg
+            px-16
+            py-4
+            rounded-xl
+            shadow-md
+            transition-all
+            duration-300
+            hover:shadow-lg
+            hover:-translate-y-0.5
+            active:translate-y-0
+          "
+        >
+          View All
+        </button>
+      </div>
     </section>
   );
 }

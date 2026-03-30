@@ -1,48 +1,18 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
 import { FaTrash, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { getSessionId } from "../utils/session.js";
+
+// ✅ NEW
+import { useWishlist } from "../context/WishlistContext";
 
 export default function Wishlist() {
-  const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
+  // ✅ CONTEXT
+  const { wishlist, toggleWishlist } = useWishlist();
 
-  const fetchWishlist = async () => {
-    try {
-      const sessionId = getSessionId();
-  
-      const res = await axios.get(
-        `https://raadi-jdun.onrender.com/api/v1/wishlist?sessionId=${sessionId}`
-      );
-  
-      setWishlist(res.data.wishlist?.products || []);
-    } catch (err) {
-      console.error("Wishlist Fetch Error:", err);
-    }
-  };
-
-  const removeItem = async (productId) => {
-    try {
-      const sessionId = getSessionId();
-  
-      const res = await axios.delete(
-        "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
-        {
-          data: { productId, sessionId },
-        }
-      );
-  
-      if (res.data.success) {
-        setWishlist(wishlist.filter((item) => item._id !== productId));
-      }
-    } catch (err) {
-      console.log(err);
-    }
+  const removeItem = (productId) => {
+    const product = wishlist.find((item) => item._id === productId);
+    if (product) toggleWishlist(product); // remove
   };
 
   const openProduct = (id) => navigate(`/product/${id}`);
@@ -90,7 +60,7 @@ export default function Wishlist() {
             >
               {/* Remove Button */}
               <button
-                onClick={() => removeItem(product._id)}
+                onClick={() => removeItem(product._id)} // ✅ UPDATED
                 className="
                   absolute top-3 right-3 z-50 bg-white shadow p-2 rounded-full 
                   hover:bg-red-500 hover:text-white transition

@@ -5,6 +5,8 @@ import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import Footer from "../components/Footer";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 /**
  * ProductDetails (responsive, production-like)
@@ -45,10 +47,6 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // cart/wishlist states (UI-driven)
-  const [quantity, setQuantity] = useState(1);
-  const [inCart, setInCart] = useState(false);
-  const [inWishlist, setInWishlist] = useState(false);
 
   // reviews states
   const [reviews, setReviews] = useState([]);
@@ -59,19 +57,43 @@ export default function ProductDetails() {
   const [newRating, setNewRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
-
+  
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeImage, setActiveImage] = useState(0);
+
+  const { cart, addToCart, updateQuantity } = useCart();
+const { toggleWishlist, isInWishlist } = useWishlist();
+
 
 
   // Keep UI snappy - fetch all on mount / id change
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchProduct(), fetchCart(), fetchWishlist(), fetchReviews(), fetchRelatedProducts(),checkLoginStatus()])
+    Promise.all([fetchProduct(),  fetchReviews(), fetchRelatedProducts(),])
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const getQty = () => {
+    const item = cart.find((i) => i._id === id);
+    return item ? item.quantity : 0;
+  };
+  
+  const quantity = getQty();
+  const inCart = quantity > 0;
+  const inWishlist = isInWishlist(id);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+  };
+  
+  const handleQuantityChange = (qty) => {
+    updateQuantity(id, qty);
+  };
+  
+  const handleWishlist = () => {
+    toggleWishlist(product);
+  };
 
   
 
@@ -89,33 +111,10 @@ export default function ProductDetails() {
   };
 
   // Fetch cart to derive quantity/inCart
-  const fetchCart = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/cart`, { withCredentials: true });
-      const item = res.data.cart?.items?.find((i) => i.product && (i.product._id === id || i.product === id));
-      if (item) {
-        setInCart(true);
-        setQuantity(item.quantity || 1);
-      } else {
-        setInCart(false);
-        setQuantity(1);
-      }
-    } catch (err) {
-      setInCart(false);
-      setQuantity(1);
-    }
-  };
+ 
 
   // Fetch wishlist to check if in wishlist
-  const fetchWishlist = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/wishlist`, { withCredentials: true });
-      const ids = res.data.wishlist?.products?.map((p) => p._id) || [];
-      setInWishlist(ids.includes(id));
-    } catch (err) {
-      setInWishlist(false);
-    }
-  };
+  
 
   // Fetch reviews + compute avg & breakdown
   const fetchReviews = async () => {
@@ -140,21 +139,7 @@ export default function ProductDetails() {
     }
   };
 
-  // Quick check if user logged in (used for enabling review submit)
-  const checkLoginStatus = async () => {
-    try {
-      // prefer profile route, fallback to /users/me if your app uses that
-      await axios.get(`${API_BASE}/users/profile`, { withCredentials: true });
-      setUserLoggedIn(true);
-    } catch {
-      try {
-        await axios.get(`${API_BASE}/users/me`, { withCredentials: true });
-        setUserLoggedIn(true);
-      } catch {
-        setUserLoggedIn(false);
-      }
-    }
-  };
+  
 
   const fetchRelatedProducts = async () => {
   try {
@@ -170,76 +155,7 @@ export default function ProductDetails() {
 
   /* -------------------- Cart / Wishlist actions (optimistic) -------------------- */
 
-  const addToCart = async () => {
-    // optimistic UI
-    const prevQty = quantity;
-    const prevInCart = inCart;
-    setInCart(true);
-    setQuantity(prevQty);
-
-    try {
-      const res = await axios.post(`${API_BASE}/cart/add`, { productId: id, quantity: Math.max(1, quantity) }, { withCredentials: true });
-      // sync with backend (if returned)
-      const item = res.data.cart?.items?.find((i) => (i.product.toString && i.product.toString() === id) || i.product === id);
-      if (item) setQuantity(item.quantity);
-    } catch (err) {
-      if (err.response?.status === 401) return navigate("/login");
-      console.error("Add to cart error:", err);
-      setInCart(prevInCart);
-      setQuantity(prevQty);
-    }
-  };
-
-  const updateCartQuantity = async (newQty) => {
-    const prevQty = quantity;
-    const prevInCart = inCart;
-
-    if (newQty <= 0) {
-      // remove
-      setInCart(false);
-      setQuantity(1);
-      try {
-        await axios.delete(`${API_BASE}/cart/remove`, { data: { productId: id }, withCredentials: true });
-      } catch (err) {
-        console.error("Remove cart error:", err);
-        setInCart(prevInCart);
-        setQuantity(prevQty);
-      }
-      return;
-    }
-
-    setQuantity(newQty);
-    setInCart(true);
-    try {
-      const res = await axios.put(`${API_BASE}/cart/update`, { productId: id, quantity: newQty }, { withCredentials: true });
-      if (!res.data.success) {
-        setQuantity(prevQty);
-        setInCart(prevInCart);
-      }
-    } catch (err) {
-      if (err.response?.status === 401) return navigate("/login");
-      console.error("Update cart quantity error:", err);
-      setQuantity(prevQty);
-      setInCart(prevInCart);
-    }
-  };
-
-  const toggleWishlist = async () => {
-    const prev = inWishlist;
-    setInWishlist(!prev);
-    try {
-      if (prev) {
-        await axios.delete(`${API_BASE}/wishlist/remove`, { data: { productId: id }, withCredentials: true });
-      } else {
-        await axios.post(`${API_BASE}/wishlist/add`, { productId: id }, { withCredentials: true });
-      }
-    } catch (err) {
-      if (err.response?.status === 401) return navigate("/login");
-      console.error("Wishlist toggle error:", err);
-      setInWishlist(prev);
-    }
-  };
-
+  
   /* -------------------- Reviews submit -------------------- */
 
   const submitReview = async () => {
@@ -384,13 +300,13 @@ product?.discount ??
             {/* ACTIONS */}
             <div className="flex flex-wrap items-center gap-4 mt-2">
               <div className="flex items-center border rounded-lg px-3 md:px-5 py-2 md:py-3 gap-4 bg-white">
-                <button aria-label="Decrease" onClick={() => updateCartQuantity(quantity - 1)} className="text-2xl text-gray-700">−</button>
+                <button aria-label="Decrease" onClick={() => handleQuantityChange(quantity - 1)} className="text-2xl text-gray-700">−</button>
                 <div className="min-w-[42px] text-center font-medium">{quantity}</div>
-                <button aria-label="Increase" onClick={() => updateCartQuantity(quantity + 1)} className="text-2xl text-gray-700">+</button>
+                <button aria-label="Increase" onClick={() => handleQuantityChange(quantity + 1)} className="text-2xl text-gray-700">+</button>
               </div>
 
               <button
-                onClick={addToCart}
+                onClick={handleAddToCart}
                 disabled={inCart}
                 className={`px-6 py-3 rounded-lg font-semibold transition ${inCart ? "bg-gray-300 text-gray-700 cursor-not-allowed" : "bg-orange-500 text-white hover:bg-orange-600"}`}
                 aria-pressed={inCart}
@@ -399,7 +315,7 @@ product?.discount ??
               </button>
 
               <button
-                onClick={toggleWishlist}
+                onClick={handleWishlist}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${inWishlist ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-white text-gray-700"}`}
                 aria-pressed={inWishlist}
                 title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
@@ -469,11 +385,7 @@ product?.discount ??
 
             <div className="md:w-1/4">
               <h3 className="text-lg font-semibold mb-2">Write a review</h3>
-              {!userLoggedIn ? (
-                <div className="text-sm text-gray-600">
-                  <button onClick={() => navigate("/login")} className="text-orange-500 underline">Log in</button> to leave a review.
-                </div>
-              ) : (
+               (
                 <>
                   <div className="flex gap-2 mb-3 text-2xl">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -504,7 +416,7 @@ product?.discount ??
                     {submittingReview ? "Submitting..." : "Submit"}
                   </button>
                 </>
-              )}
+              )
             </div>
           </div>
 

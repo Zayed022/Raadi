@@ -9,7 +9,7 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
-router.post("/add", verifyJWT, addReview);
+router.post("/add", addReview);
 router.get("/:productId", getReviews);
 router.delete("/delete", verifyJWT, deleteReview);
 

@@ -10,9 +10,9 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
-router.post("/add", verifyJWT, addToWishlist);
-router.get("/", verifyJWT, getWishlist);
-router.delete("/remove", verifyJWT, removeFromWishlist);
-router.delete("/clear", verifyJWT, clearWishlist);
+router.post("/add", addToWishlist);
+router.get("/", getWishlist);
+router.delete("/remove", removeFromWishlist);
+router.delete("/clear", clearWishlist);
 
 export default router;

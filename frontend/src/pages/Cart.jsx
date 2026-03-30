@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
+import { getSessionId } from "../utils/session.js";
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
@@ -36,75 +37,83 @@ export default function Cart() {
 
   const fetchCart = async () => {
     try {
+      const sessionId = getSessionId();
+  
       const res = await axios.get(
-        "https://raadi-jdun.onrender.com/api/v1/cart",
-        { withCredentials: true }
+        `https://raadi-jdun.onrender.com/api/v1/cart?sessionId=${sessionId}`
       );
-
+  
       const cartData = res.data.cart || { items: [], totalPrice: 0 };
+  
       setCart(cartData);
-
-      const total =
-        cartData.totalPrice + tax + shipping - discount;
-
+  
+      const total = cartData.totalPrice + tax + shipping - discount;
       setFinalTotal(total);
     } catch {}
     setLoading(false);
   };
 
   const updateQuantity = async (productId, newQty) => {
+    const sessionId = getSessionId();
+  
     if (newQty <= 0) return removeItem(productId);
-
+  
     const res = await axios.put(
       "https://raadi-jdun.onrender.com/api/v1/cart/update",
-      { productId, quantity: newQty },
-      { withCredentials: true }
+      {
+        productId,
+        quantity: newQty,
+        sessionId,
+      }
     );
-
+  
     const updatedCart = res.data.cart;
     setCart(updatedCart);
-
-    const total =
-      updatedCart.totalPrice + tax + shipping - discount;
-
+  
+    const total = updatedCart.totalPrice + tax + shipping - discount;
     setFinalTotal(total);
   };
 
   const removeItem = async (productId) => {
+    const sessionId = getSessionId();
+  
     await axios.delete(
       "https://raadi-jdun.onrender.com/api/v1/cart/remove",
       {
-        data: { productId },
-        withCredentials: true,
+        data: { productId, sessionId },
       }
     );
-
+  
     fetchCart();
   };
 
   const applyPromo = async () => {
+    const sessionId = getSessionId();
+  
     if (!promoCode.trim()) {
       setCouponMessage({ type: "error", text: "Enter valid promo code" });
       return;
     }
-
+  
     setCouponApplying(true);
-
+  
     try {
       const res = await axios.post(
         "https://raadi-jdun.onrender.com/api/v1/promoCode/apply-promo",
-        { code: promoCode },
-        { withCredentials: true }
+        {
+          code: promoCode,
+          sessionId,
+        }
       );
-
+  
       const discountValue = res.data.discount;
       setDiscount(discountValue);
-
+  
       const newTotal =
         cart.totalPrice + tax + shipping - discountValue;
-
+  
       setFinalTotal(newTotal);
-
+  
       setCouponMessage({
         type: "success",
         text: `Saved ₹${discountValue} successfully!`,
@@ -116,7 +125,7 @@ export default function Cart() {
       });
       setDiscount(0);
     }
-
+  
     setCouponApplying(false);
   };
 

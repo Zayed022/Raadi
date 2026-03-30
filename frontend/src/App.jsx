@@ -6,8 +6,7 @@ import About from "./pages/About";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
 import Wishlist from "./pages/Wishlist";
-import Login from "./pages/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
+
 import Cart from "./pages/Cart";
 import ProductDetails from "./pages/ProductDetails";
 import CategoryProducts from "./pages/CategoryProducts";
@@ -32,7 +31,6 @@ function App() {
          <Route path="/shop" element={<Shop />} />
          <Route path="/contact-us" element={<Contact />} />
          <Route path="/wishlist" element={<Wishlist />} />
-         <Route path="/login" element={<Login />} />
          <Route path="/cart" element={<Cart />} />
          <Route path="/product/:id" element={<ProductDetails />} />
          <Route path="/category/:category" element={<CategoryProducts />} />
@@ -46,15 +44,9 @@ function App() {
          <Route path="/shipping-policy" element={<ShippingPolicy />} />
 
 
-         <Route 
-          path="/wishlist" 
-          element={
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          } />
+        
 
-        <Route path="/login" element={<Login />} />
+        
       </Routes>
       
     </BrowserRouter>

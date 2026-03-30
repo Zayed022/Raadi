@@ -14,13 +14,7 @@ export default function SpecialProduct() {
   // ------------------------------------------------------------
   // LOGIN CHECK → redirect to login on 401
   // ------------------------------------------------------------
-  const checkLogin = (err) => {
-    if (err?.response?.status === 401) {
-      navigate("/login");
-      return true;
-    }
-    return false;
-  };
+  
 
   // ------------------------------------------------------------
   // Fetch special product + wishlist + cart in one go

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaTrash, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { getSessionId } from "../utils/session.js";
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
@@ -13,10 +14,12 @@ export default function Wishlist() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await axios.get("https://raadi-jdun.onrender.com/api/v1/wishlist/", {
-        withCredentials: true,
-      });
-
+      const sessionId = getSessionId();
+  
+      const res = await axios.get(
+        `https://raadi-jdun.onrender.com/api/v1/wishlist?sessionId=${sessionId}`
+      );
+  
       setWishlist(res.data.wishlist?.products || []);
     } catch (err) {
       console.error("Wishlist Fetch Error:", err);
@@ -25,16 +28,20 @@ export default function Wishlist() {
 
   const removeItem = async (productId) => {
     try {
-      const res = await axios.delete("https://raadi-jdun.onrender.com/api/v1/wishlist/remove", {
-        data: { productId },
-        withCredentials: true,
-      });
-
+      const sessionId = getSessionId();
+  
+      const res = await axios.delete(
+        "https://raadi-jdun.onrender.com/api/v1/wishlist/remove",
+        {
+          data: { productId, sessionId },
+        }
+      );
+  
       if (res.data.success) {
         setWishlist(wishlist.filter((item) => item._id !== productId));
       }
     } catch (err) {
-      console.log("Remove Wishlist Error:", err);
+      console.log(err);
     }
   };
 

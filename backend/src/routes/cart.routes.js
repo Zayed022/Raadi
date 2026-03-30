@@ -11,10 +11,10 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
 
-router.post("/add", verifyJWT, addToCart);
-router.get("/", verifyJWT, getUserCart);
-router.put("/update", verifyJWT, updateQuantity);
-router.delete("/remove", verifyJWT, removeFromCart);
-router.delete("/clear", verifyJWT, clearCart);
+router.post("/add", addToCart);
+router.get("/", getUserCart);
+router.put("/update", updateQuantity);
+router.delete("/remove", removeFromCart);
+router.delete("/clear", clearCart);
 
 export default router;

@@ -6,19 +6,18 @@ import Product from "../models/product.models.js";
 // ===========================
 export const addToWishlist = async (req, res) => {
   try {
-    const { productId } = req.body;
-    const userId = req.user._id;
+    const { productId, sessionId } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    let wishlist = await Wishlist.findOne({ user: userId });
+    let wishlist = await Wishlist.findOne({ sessionId });
 
     if (!wishlist) {
       wishlist = await Wishlist.create({
-        user: userId,
+        sessionId,
         products: [productId],
       });
     } else {
@@ -40,8 +39,8 @@ export const addToWishlist = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("AddToWishlist Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    console.error(error);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -50,13 +49,14 @@ export const addToWishlist = async (req, res) => {
 // ===========================
 export const getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.findOne({ user: req.user._id })
+    const { sessionId } = req.query;
+
+    const wishlist = await Wishlist.findOne({ sessionId })
       .populate("products");
 
     if (!wishlist) {
       return res.status(200).json({
         success: true,
-        message: "Wishlist is empty",
         wishlist: [],
       });
     }
@@ -64,7 +64,7 @@ export const getWishlist = async (req, res) => {
     return res.status(200).json({ success: true, wishlist });
 
   } catch (error) {
-    console.error("GetWishlist Error:", error);
+    console.error(error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
@@ -74,9 +74,9 @@ export const getWishlist = async (req, res) => {
 // ===========================
 export const removeFromWishlist = async (req, res) => {
   try {
-    const { productId } = req.body;
+    const { productId, sessionId } = req.body;
 
-    const wishlist = await Wishlist.findOne({ user: req.user._id });
+    const wishlist = await Wishlist.findOne({ sessionId });
 
     if (!wishlist) {
       return res.status(404).json({ message: "Wishlist not found" });
@@ -95,7 +95,7 @@ export const removeFromWishlist = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("RemoveWishlist Error:", error);
+    console.error(error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
@@ -105,7 +105,9 @@ export const removeFromWishlist = async (req, res) => {
 // ===========================
 export const clearWishlist = async (req, res) => {
   try {
-    await Wishlist.findOneAndDelete({ user: req.user._id });
+    const { sessionId } = req.body;
+
+    await Wishlist.findOneAndDelete({ sessionId });
 
     return res.status(200).json({
       success: true,
@@ -113,7 +115,7 @@ export const clearWishlist = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("ClearWishlist Error:", error);
+    console.error(error);
     return res.status(500).json({ message: "Server Error" });
   }
 };

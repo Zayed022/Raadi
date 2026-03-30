@@ -94,7 +94,7 @@ export default function CategoryProducts() {
         setWishlist((prev) => [...prev, productId]);
       }
     } catch (err) {
-      if (err.response?.status === 401) navigate("/login");
+      if (err.response?.status === 401) navigate("/");
     }
   };
 

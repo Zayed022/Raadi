@@ -243,7 +243,7 @@ export default function ProductDetails() {
   /* -------------------- Reviews submit -------------------- */
 
   const submitReview = async () => {
-    if (!userLoggedIn) return navigate("/login");
+  
     if (!newRating) return alert("Please select star rating");
 
     setSubmittingReview(true);

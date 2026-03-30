@@ -3,23 +3,63 @@ import Cart from "../models/cart.models.js";
 
 export const applyPromo = async (req, res) => {
   try {
-    const { code } = req.body;
-    const userId = req.user._id;
+    const { code, sessionId } = req.body;
 
+    // ✅ Validate session
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Session ID required",
+      });
+    }
+
+    // ✅ Find promo
     const promo = await PromoCode.findOne({ code, isActive: true });
 
-    if (!promo) return res.status(404).json({ success: false, message: "Invalid promo code" });
-    if (promo.expiresAt < new Date())
-      return res.status(400).json({ success: false, message: "Promo code expired" });
+    if (!promo) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid promo code",
+      });
+    }
 
-    const cart = await Cart.findOne({ user: userId }).populate("items.product");
-    if (!cart) return res.status(404).json({ success: false, message: "Cart is empty" });
+    if (promo.expiresAt < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Promo code expired",
+      });
+    }
 
+    // ✅ Get cart using sessionId
+    const cart = await Cart.findOne({ sessionId }).populate("items.product");
+
+    if (!cart || !cart.items.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart is empty",
+      });
+    }
+
+    // ✅ Calculate discount
     let discount = 0;
+
     if (promo.discountType === "percentage") {
       discount = (cart.totalPrice * promo.amount) / 100;
     } else {
       discount = promo.amount;
+    }
+
+    // Optional: cap discount (recommended)
+    if (promo.maxDiscount) {
+      discount = Math.min(discount, promo.maxDiscount);
+    }
+
+    // Optional: minimum order check
+    if (promo.minOrderValue && cart.totalPrice < promo.minOrderValue) {
+      return res.status(400).json({
+        success: false,
+        message: `Minimum order value ₹${promo.minOrderValue} required`,
+      });
     }
 
     const finalPrice = Math.max(cart.totalPrice - discount, 0);
@@ -29,12 +69,15 @@ export const applyPromo = async (req, res) => {
       message: "Promo applied successfully",
       discount,
       finalPrice,
-      promo
+      promo,
     });
 
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    console.log("ApplyPromo Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 

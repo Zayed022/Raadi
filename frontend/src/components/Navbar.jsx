@@ -158,12 +158,7 @@ export default function Navbar() {
               )}
             </Link>
 
-            <Link
-              to="/login"
-              className="p-2 rounded-full hover:bg-gray-100 transition"
-            >
-              <FiUser className="text-xl text-gray-700 hover:text-orange-600" />
-            </Link>
+            
 
             <Link
               to="/cart"

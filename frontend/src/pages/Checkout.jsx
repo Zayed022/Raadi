@@ -235,7 +235,7 @@ if (!loaded) {
 }
 
 const options = {
-  key: res.data.key,
+  key: "rzp_live_RvghTQaGGOUYT",
   amount: res.data.amount,
   currency: "INR",
   name: "Raadii",

@@ -57,6 +57,13 @@ export default function AdminOrders() {
     }
   };
 
+  const downloadInvoice = (orderId) => {
+    window.open(
+      `https://raadi-jdun.onrender.com/api/v1/order/invoice/${orderId}`,
+      "_blank"
+    );
+  };
+
   const statusColors = {
     confirmed: "bg-green-100 text-green-700",
     pending: "bg-yellow-100 text-yellow-700",
@@ -262,6 +269,16 @@ export default function AdminOrders() {
                       {order.paymentInfo?.transactionId || "N/A"}
                     </p>
                   </div>
+
+                  {/* Invoice Download */}
+<div className="flex justify-end">
+  <button
+    onClick={() => downloadInvoice(order._id)}
+    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition"
+  >
+    Download Invoice
+  </button>
+</div>
 
                   {order.deliveredAt && (
                     <div className="text-green-600 font-semibold">

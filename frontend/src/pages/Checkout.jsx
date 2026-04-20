@@ -185,7 +185,7 @@ const handlePlaceOrder = async () => {
   };
 
   const items = cart.map(it => ({
-    product: it._id,
+    product: it.product?._id || it._id,
     quantity: it.quantity,
     price: it.price
   }));
@@ -235,7 +235,7 @@ if (!loaded) {
 }
 
 const options = {
-  key: "rzp_live_RvghTQaGGOUYT",
+  key: "rzp_live_SfhJMQu8mAKTpg",
   amount: res.data.amount,
   currency: "INR",
   name: "Raadii",

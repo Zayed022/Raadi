@@ -94,10 +94,15 @@ export const createOrder = async (req, res) => {
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
-    console.log("CREATE ORDER ERROR:", error);
-    res.status(500).json({
+    console.error("CREATE ORDER ERROR FULL:", {
+      message: error.message,
+      stack: error.stack,
+      body: req.body
+    });
+  
+    return res.status(500).json({
       success: false,
-      message: error?.message || "Server Error",
+      message: error.message,
     });
   }
 };

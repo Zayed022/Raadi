@@ -18,7 +18,7 @@ CategorySchema.pre("save", function (next) {
       .trim()
       .replace(/\s+/g, "-");
   }
-  next();
+  
 });
 
 export default mongoose.model("Category", CategorySchema);

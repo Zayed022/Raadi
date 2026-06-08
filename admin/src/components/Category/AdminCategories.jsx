@@ -20,7 +20,11 @@ export default function AdminCategories() {
       const res = await axios.get(API);
       setCategories(res.data.categories || []);
     } catch (err) {
-      console.error("Fetch Error:", err);
+      console.log(err);
+      console.log(err.response);
+      console.log(err.response?.data);
+    
+      alert(err.response?.data?.message || "Something went wrong!");
     }
   };
 

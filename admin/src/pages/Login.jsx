@@ -19,7 +19,7 @@ const Login = () => {
 
     try {
       // Replace with API call
-      if (email === "admin@gmail.com" && password === "123456") {
+      if (email === "SIRAJ210385" && password === "myteam123456") {
         login({ email });
         navigate("/");
       } else {
